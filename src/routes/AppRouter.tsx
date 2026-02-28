@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
+import Login from '../features/auth/pages/Login'
 
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
-const Login = () => <div>Login Page</div>;
 const CustomerMenu = () => <div>Customer Menu (Public)</div>;
 const AdminDashboard = () => <div>Admin Dashboard</div>;
 const KitchenBoard = () => <div>Kitchen Board</div>;
