@@ -24,6 +24,7 @@ export interface ActiveDiscountInfo {
 }
 
 export interface MenuItem {
+  image: any;
   id: number;
   name: string;
   price: number;
