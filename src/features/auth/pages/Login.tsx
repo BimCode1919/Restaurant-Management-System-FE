@@ -20,7 +20,11 @@ const Login: React.FC = () => {
 
       // Lưu thông tin vào LocalStorage (Bao gồm token, refreshToken và user info)
       const authData = response.data;
-      localStorage.setItem('user', JSON.stringify(authData));
+      localStorage.setItem('user', JSON.stringify({
+        token: authData.token,
+        role: authData.user.role, // Lưu Role ra ngoài cùng cho dễ check
+        info: authData.user       // Lưu các thông tin khác vào info
+      }));
 
       // Điều hướng dựa trên Role từ BE trả về
       const role = authData.user.role.toUpperCase();

@@ -12,7 +12,12 @@ const ProtectedRoute = ({ allowedRoles }: Props) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(user.role)) {
+  // Chuyển role về Uppercase để so sánh chính xác với BE
+  const userRole = user.role?.toUpperCase(); 
+  const formattedAllowedRoles = allowedRoles.map(role => role.toUpperCase());
+
+  if (!formattedAllowedRoles.includes(userRole)) {
+    console.warn(`Access Denied. User role: ${userRole}, Required: ${formattedAllowedRoles}`);
     return <Navigate to="/unauthorized" replace />;
   }
 

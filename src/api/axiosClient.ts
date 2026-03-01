@@ -9,13 +9,12 @@ const axiosClient = axios.create({
 
 // Interceptor cho Request: Đính kèm token vào header
 axiosClient.interceptors.request.use(
+
     (config) => {
         const userData = localStorage.getItem('user');
         if (userData) {
             const { token } = JSON.parse(userData);
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
