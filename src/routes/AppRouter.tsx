@@ -2,9 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../features/auth/pages/Login'
 import AdminDashboard from '../features/admin/pages/AdminDashboard';
+import CustomerMenu from '../features/customer/pages/CustomerMenu';
 
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
-const CustomerMenu = () => <div>Customer Menu (Public)</div>;
 const KitchenBoard = () => <div>Kitchen Board</div>;
 const StaffOrder = () => <div>Staff Order View</div>;
 const Unauthorized = () => <div>Bạn không có quyền truy cập!</div>;
@@ -30,7 +30,7 @@ const AppRouter = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/menu" element={<CustomerMenu />} />
+        <Route path="/menu" element={<CustomerMenu store={mockStore} />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Private Routes: Admin & Manager */}
