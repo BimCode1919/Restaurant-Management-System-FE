@@ -3,10 +3,10 @@ import ProtectedRoute from './ProtectedRoute';
 import Login from '../features/auth/pages/Login'
 import AdminDashboard from '../features/admin/pages/AdminDashboard';
 import CustomerMenu from '../features/customer/pages/CustomerMenu';
+import StaffDashboard from '../features/staff/pages/StaffDashboard';
 
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
 const KitchenBoard = () => <div>Kitchen Board</div>;
-const StaffOrder = () => <div>Staff Order View</div>;
 const Unauthorized = () => <div>Bạn không có quyền truy cập!</div>;
 
 const AppRouter = () => {
@@ -39,13 +39,13 @@ const AppRouter = () => {
         </Route>
 
         {/* Private Routes: Kitchen */}
-        <Route element={<ProtectedRoute allowedRoles={['kitchen', 'admin']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['CHEF', 'ADMIN']} />}>
           <Route path="/kitchen" element={<KitchenBoard />} />
         </Route>
 
         {/* Private Routes: Staff */}
-        <Route element={<ProtectedRoute allowedRoles={['staff', 'admin']} />}>
-          <Route path="/staff" element={<StaffOrder />} />
+        <Route element={<ProtectedRoute allowedRoles={['STAFF', 'ADMIN']} />}>
+          <Route path="/staff" element={<StaffDashboard store={mockStore}/>} />
         </Route>
 
         {/* Default Route */}
