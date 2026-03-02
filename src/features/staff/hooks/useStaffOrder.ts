@@ -1,61 +1,99 @@
-import { useState, useMemo } from 'react';
-import { Order, OrderStatus, MenuItem, OrderItem } from '../types';
+// src/features/staff/hooks/useStaffOrder.ts
+import { useState, useCallback, useMemo } from 'react';
+import { staffApi } from '../services/staffApi';
+import { 
+  TableResponse, ItemResponse, OrderType, 
+  TableStatus, ApiResponse, BillResponse 
+} from '../types';
 
-export const useStaffOrder = (store: any) => {
-  const [filter, setFilter] = useState<OrderStatus | 'ALL'>('ALL');
-  const [search, setSearch] = useState('');
+export const useStaffOrder = () => {
+  const [loading, setLoading] = useState(false);
+  const [tables, setTables] = useState<TableResponse[]>([]);
+  const [menu, setMenu] = useState<ItemResponse[]>([]);
+
   const [isOrdering, setIsOrdering] = useState(false);
-  const [orderStep, setOrderStep] = useState<'TABLE' | 'MENU'>('TABLE');
-  const [selectedTable, setSelectedTable] = useState<string | null>(null);
-  const [cart, setCart] = useState<OrderItem[]>([]);
-  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  const [orderStep, setOrderStep] = useState<'TABLE' | 'PARTY_SIZE' | 'MENU'>('TABLE');
+  const [selectedTable, setSelectedTable] = useState<TableResponse | null>(null);
+  const [partySize, setPartySize] = useState<number>(1);
+  const [cart, setCart] = useState<any[]>([]);
 
-  const filteredOrders = useMemo(() => {
-    if (!store?.orders) return [];
-    return store.orders.filter((o: Order) => {
-      if (o.status === 'SERVED' || o.status === 'CANCELLED') return false;
-      const matchesSearch = o.tableId.includes(search) || o.id.includes(search);
-      const matchesFilter = filter === 'ALL' || o.status === filter;
-      return matchesSearch && matchesFilter;
-    });
-  }, [store.orders, search, filter]);
+  const refreshData = useCallback(async () => {
+    // Không set loading liên tục nếu là polling ngầm để tránh giật lag UI
+    try {
+      const [tableRes, menuRes] = await Promise.all([
+        staffApi.getTables(),
+        staffApi.getAvailableItems()
+      ]);
 
-  const handleAddToCart = (item: MenuItem) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.menuItemId === item.id);
-      if (existing) {
-        return prev.map(i => i.menuItemId === item.id ? { ...i, quantity: i.quantity + 1 } : i);
-      }
-      return [...prev, {
-        id: Math.random().toString(),
-        menuItemId: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: 1,
-        note: ""
-      }];
-    });
-  };
+      if (tableRes.data) setTables(tableRes.data as TableResponse[]);
+      if (menuRes.data) setMenu(menuRes.data as ItemResponse[]);
+    } catch (error) {
+      console.error("Fetch data failed", error);
+    }
+  }, []);
 
-  const finalizeOrder = () => {
-    if (!selectedTable || cart.length === 0) return;
-    store.addItemsToOrder(selectedTable, cart);
-    resetOrderState();
-  };
-
-  const resetOrderState = () => {
+  const resetOrderFlow = useCallback(() => {
     setIsOrdering(false);
     setOrderStep('TABLE');
     setSelectedTable(null);
+    setPartySize(1);
     setCart([]);
-  };
+  }, []);
+
+  const finalizeOrder = useCallback(async () => {
+    if (!selectedTable) return;
+    setLoading(true);
+    try {
+      let activeBillId: number | undefined;
+
+      if (selectedTable.status === TableStatus.AVAILABLE) {
+        const billRes = (await staffApi.createBill({
+          tableIds: [selectedTable.id],
+          partySize: partySize
+        })) as ApiResponse<BillResponse>;
+        activeBillId = billRes.data.id;
+      } else {
+        // Lấy bill ID từ dữ liệu bàn có sẵn (Backend trả về currentBillId)
+        activeBillId = (selectedTable as any).currentBillId || (selectedTable as any).currentBill?.id; 
+      }
+
+      if (!activeBillId) throw new Error("Could not find or create a Bill.");
+
+      await staffApi.createOrder({
+        billId: activeBillId,
+        orderType: OrderType.AT_TABLE,
+        items: cart.map(item => ({
+          itemId: item.id,
+          quantity: item.quantity,
+          notes: item.note || ""
+        }))
+      });
+
+      resetOrderFlow();
+      await refreshData();
+      return { success: true };
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Order failed!");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedTable, partySize, cart, refreshData, resetOrderFlow]);
+
+  // Quan trọng: Bọc actions trong useMemo để tránh re-render loop
+  const actions = useMemo(() => ({
+    setIsOrdering,
+    setOrderStep,
+    setSelectedTable,
+    setPartySize,
+    setCart,
+    refreshData,
+    finalizeOrder,
+    resetOrderFlow
+  }), [refreshData, finalizeOrder, resetOrderFlow]);
 
   return {
-    state: { filter, search, isOrdering, orderStep, selectedTable, cart, viewingOrder, filteredOrders },
-    actions: { 
-        setFilter, setSearch, setIsOrdering, setOrderStep, 
-        setSelectedTable, setCart, setViewingOrder, 
-        handleAddToCart, finalizeOrder, resetOrderState 
-    }
+    state: { tables, menu, isOrdering, orderStep, selectedTable, partySize, cart, loading },
+    actions
   };
 };
