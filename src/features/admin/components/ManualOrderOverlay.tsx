@@ -6,10 +6,10 @@ interface Props {
   cart: OrderItem[];
   tables?: any[];
   menu?: MenuItem[];
-  selectedTable?: string;
-  onSelectTable?: (id: string) => void;
+  selectedTable?: string | number;
+  onSelectTable?: (id: string | number) => void;
   onAddToCart?: (item: MenuItem) => void;
-  onRemoveFromCart?: (id: string) => void;
+  onRemoveFromCart?: (id: string | number) => void;
   onSubmitOrder?: () => void;
 }
 

@@ -3,11 +3,13 @@ import { adminApi } from '../services/adminApi';
 import { MenuItem, AdminTab, OrderItem } from '../types';
 
 export const useAdminDashboard = (store: any) => {
+    
     // --- DATA STATES ---
-    const [activeTab, setActiveTab] = useState<AdminTab>('MENU');
+    const [activeTab, setActiveTab] = useState<AdminTab>('DASHBOARD');
     const [menu, setMenu] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(false);
-
+    // --- DASHBOARD DATA STATES ---
+    const [dailyRevenue, setDailyRevenue] = useState<{ date: string; revenue: number }[]>([]);
     // --- UI & MODAL STATES ---
     const [menuSearch, setMenuSearch] = useState('');
     const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
@@ -19,6 +21,14 @@ export const useAdminDashboard = (store: any) => {
     const [selectedTable, setSelectedTable] = useState('1');
 
     // ================= 1. FETCH DATA (READ) =================
+    const fetchDailyRevenue = async () => {
+        try {
+            const response = await adminApi.getDailyRevenue();
+            setDailyRevenue(response.data);
+        } catch (error) {
+            console.error("Lỗi khi lấy doanh thu hàng ngày:", error);
+        }
+        };
     const fetchMenu = async () => {
         setLoading(true);
         try {
