@@ -149,7 +149,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = (props) => {
                     <p className="font-bold uppercase text-xs tracking-widest">Cart is empty</p>
                   </div>
                 ) : (
-                  cart.map((item) => (
+                  cart.map((item, index) => (
                     <div key={item.id} className="flex flex-col gap-2 p-4 bg-gray-50 rounded-2xl border border-gray-100">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
@@ -168,12 +168,12 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = (props) => {
                         {/* Bộ tăng giảm số lượng */}
                         <div className="flex items-center gap-3 bg-white rounded-xl p-1 border border-gray-100">
                           <button
-                            onClick={() => onUpdateCartQty(item.id, -1)}
+                            onClick={() => onUpdateCartQty(index, -1)}
                             className="size-7 rounded-lg hover:bg-gray-100 flex items-center justify-center font-bold"
                           >-</button>
                           <span className="font-black text-xs w-4 text-center">{item.quantity}</span>
                           <button
-                            onClick={() => onUpdateCartQty(item.id, 1)}
+                            onClick={() => onUpdateCartQty(index, 1)}
                             className="size-7 rounded-lg hover:bg-gray-100 flex items-center justify-center font-bold"
                           >+</button>
                         </div>

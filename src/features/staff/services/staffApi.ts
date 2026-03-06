@@ -2,7 +2,8 @@
 import axiosClient from '../../../api/axiosClient';
 import { 
   CreateOrderRequest, ApiResponse, CreateBillRequest, 
-  TableResponse, BillResponse, ItemResponse, OrderResponse 
+  TableResponse, BillResponse, ItemResponse, OrderResponse, 
+  ItemStatus
 } from '../types';
 
 export const staffApi = {
@@ -21,4 +22,9 @@ export const staffApi = {
     
   getOrdersByBill: (billId: number) => 
     axiosClient.get(`/orders/bill/${billId}`) as Promise<ApiResponse<OrderResponse[]>>,
+  
+  updateItemStatus: (orderDetailId: number, status: ItemStatus) =>
+    axiosClient.patch(`/order-details/${orderDetailId}/status`, JSON.stringify(status), {
+      headers: { 'Content-Type': 'application/json' }
+    }) as Promise<ApiResponse<any>>,
 };

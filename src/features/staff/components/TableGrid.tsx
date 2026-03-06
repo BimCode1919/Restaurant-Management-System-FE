@@ -1,83 +1,89 @@
 import React from 'react';
-import { TableResponse, TableStatus, BillResponse } from '../types';
-import { OrderCard } from './OrderCard';
+import { TableResponse, ItemStatus, TableStatus } from '../types';
 
 interface TableGridProps {
   tables: TableResponse[];
   onSelectTable: (table: TableResponse) => void;
-  onViewDetail: (bill: BillResponse) => void;
+  onManageTable: (table: TableResponse) => void;
 }
 
-export const TableGrid: React.FC<TableGridProps> = ({ tables, onSelectTable, onViewDetail }) => {
+export const TableGrid: React.FC<TableGridProps> = ({ tables, onSelectTable, onManageTable }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {tables.map((table: any) => {
-        const tableStatus = String(table.status).toUpperCase();
-        const isOccupied = tableStatus === 'OCCUPIED';
-        const billData = table.currentBill;
-        
-        // Trường hợp 1: Có khách và CÓ dữ liệu Bill -> Hiện OrderCard
-        const hasActiveBill = isOccupied && billData && (billData.id || billData.orderIds);
+      {tables.map((table) => {
+        const isOccupied = table.status === TableStatus.OCCUPIED;
+        const isReserved = table.status === TableStatus.RESERVED;
+        const bill = table.currentBill;
 
-        if (hasActiveBill) {
-          return (
-            <OrderCard
-              key={table.id}
-              bill={billData}
-              onViewDetail={() => onViewDetail(billData)}
-            />
-          );
-        }
+        // Logic đếm tiến độ món ăn chuyên sâu
+        const getOrderStats = () => {
+          if (!bill?.orders) return null;
+          const allItems = bill.orders.flatMap(o => o.items || []);
+          if (allItems.length === 0) return null;
 
-        // Trường hợp 2: Bàn có khách nhưng CHƯA có Bill (Dữ liệu bạn gửi cho bàn 01)
-        if (isOccupied && !billData) {
-          return (
-            <div
-              key={table.id}
-              className="group relative bg-gray-50 border-2 border-red-100 rounded-[2.5rem] p-10 flex flex-col items-center justify-center gap-4 cursor-not-allowed overflow-hidden"
-            >
-              <span className="absolute top-6 right-8 text-[10px] font-black text-red-500 bg-red-50 px-4 py-1.5 rounded-full uppercase tracking-widest border border-red-100">
-                Occupied
-              </span>
-              <span className="text-7xl font-black text-red-200 tracking-tighter italic">
-                {table.tableNumber}
-              </span>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xs font-black text-red-400 uppercase tracking-[0.2em]">In Use</span>
-                <p className="text-[10px] text-gray-400 font-bold uppercase">No active bill found</p>
-              </div>
-            </div>
-          );
-        }
+          const readyCount = allItems.filter(i => i.itemStatus === ItemStatus.READY).length;
+          const servedCount = allItems.filter(i => i.itemStatus === ItemStatus.SERVED).length;
+          const preparingCount = allItems.filter(i => i.itemStatus === ItemStatus.PREPARING || i.itemStatus === ItemStatus.PENDING).length;
 
-        // Trường hợp 3: Bàn trống (Available) - Làm nổi bật đậm nét
+          return {
+            done: readyCount + servedCount,
+            total: allItems.length,
+            isAlert: readyCount > 0, // Có món đang chờ phục vụ
+            isFinished: servedCount === allItems.length
+          };
+        };
+
+        const stats = getOrderStats();
+
         return (
           <div
             key={table.id}
-            onClick={() => onSelectTable(table)}
-            className="group relative bg-white border-2 border-gray-100 rounded-[2.5rem] p-10 flex flex-col items-center justify-center gap-4 hover:border-dark-gray hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-300 cursor-pointer overflow-hidden"
+            onClick={() => (isOccupied || isReserved) ? onManageTable(table) : onSelectTable(table)}
+            className={`group relative bg-white border-2 rounded-[2.5rem] p-10 flex flex-col items-center justify-center gap-4 transition-all duration-300 cursor-pointer overflow-hidden
+                            ${isOccupied ? 'border-burgundy/10 hover:border-burgundy hover:shadow-2xl' :
+                isReserved ? 'border-orange-200 bg-orange-50/30' : 'border-gray-100 hover:border-dark-gray'}`}
           >
-            <span className="absolute top-6 right-8 text-[10px] font-black text-olive bg-olive/10 px-4 py-1.5 rounded-full uppercase tracking-widest border border-olive/20">
-              Ready
-            </span>
+            {/* Status Badges */}
+            <div className="absolute top-6 right-8 flex gap-2">
+              {isOccupied && stats?.isAlert && (
+                <span className="animate-bounce size-2 bg-burgundy rounded-full shadow-[0_0_10px_rgba(128,0,32,0.5)]"></span>
+              )}
+              <span className={`text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border
+                                ${isOccupied ? 'text-burgundy bg-burgundy/5 border-burgundy/10' :
+                  isReserved ? 'text-orange-500 bg-orange-100 border-orange-200' :
+                    'text-olive bg-olive/10 border-olive/20'}`}>
+                {table.status}
+              </span>
+            </div>
 
-            {/* Số bàn màu xám đậm, hover sẽ thành đen */}
-            <span className="text-7xl font-black text-gray-400 group-hover:text-dark-gray transition-colors duration-300 tracking-tighter">
+            {/* Progress Tracker cho bàn đang có khách */}
+            {isOccupied && stats && (
+              <div className="absolute top-6 left-8 flex flex-col gap-1">
+                <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">Kitchen Progress</span>
+                <div className="flex gap-1">
+                  {[...Array(stats.total)].map((_, i) => (
+                    <div key={i} className={`h-1 w-4 rounded-full ${i < stats.done ? 'bg-olive' : 'bg-gray-200'}`} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Table Number */}
+            <span className={`text-7xl font-black transition-colors duration-300 tracking-tighter italic
+                            ${isOccupied ? 'text-burgundy/20 group-hover:text-burgundy' :
+                isReserved ? 'text-orange-200 group-hover:text-orange-400' : 'text-gray-300 group-hover:text-dark-gray'}`}>
               {table.tableNumber}
             </span>
 
+            {/* Info Footer */}
             <div className="flex flex-col items-center gap-1">
-              <span className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] group-hover:text-dark-gray transition-colors">
-                Available
+              <span className="text-xs font-black text-dark-gray uppercase tracking-[0.2em]">
+                {isOccupied ? `Total: ${bill?.finalPrice?.toLocaleString()}đ` :
+                  isReserved ? 'Reserved for Guest' : 'Available'}
               </span>
-              <p className="text-[10px] text-gray-400 font-bold uppercase group-hover:text-gray-500 transition-colors">
-                Tap to open table
+              <p className="text-[10px] text-gray-400 font-bold uppercase">
+                {isOccupied ? `${stats?.done}/${stats?.total} Items Ready` : 'Tap to interact'}
               </p>
-            </div>
-
-            {/* Nút cộng màu đen khi hover */}
-            <div className="mt-4 size-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-dark-gray group-hover:text-white group-hover:rotate-90 transition-all duration-500 shadow-sm border border-gray-100">
-              <span className="material-symbols-outlined text-3xl">add</span>
             </div>
           </div>
         );
