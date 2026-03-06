@@ -27,6 +27,17 @@ export enum TableStatus {
   MAINTENANCE = 'MAINTENANCE'
 }
 
+export interface OrderItem {
+  id: number;
+  itemId: number;
+  itemName: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+  itemStatus: ItemStatus;
+  notes: string;
+}
+
 /**
  * API WRAPPER
  */
@@ -107,6 +118,7 @@ export interface BillResponse {
 }
 
 export interface TableResponse {
+  currentBill: any;
   id: number;
   tableNumber: string;
   status: TableStatus;

@@ -4,6 +4,7 @@ import Login from '../features/auth/pages/Login'
 import AdminDashboard from '../features/admin/pages/AdminDashboard';
 import CustomerMenu from '../features/customer/pages/CustomerMenu';
 import StaffDashboard from '../features/staff/pages/StaffDashboard';
+import { Toaster } from 'react-hot-toast';
 
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
 const KitchenBoard = () => <div>Kitchen Board</div>;
@@ -21,12 +22,29 @@ const AppRouter = () => {
       window.location.href = '/login';
     },
     // Các dữ liệu khác Dashboard cần (nếu chưa chuyển hết sang hook)
-    tables: [{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }], 
-    menu: [] 
+    tables: [{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }],
+    menu: []
   };
 
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-right"
+        reverseOrder={true}
+        gutter={12}
+        containerStyle={{ zIndex: 99999, top: 40, right: 40 }}
+        toastOptions={{
+          style: {
+            borderRadius: '1.5rem', // Bo tròn lớn giống card bàn
+            background: '#ffffff',
+            color: '#333',
+            border: '1px solid #f3f4f6',
+            boxShadow: '0 25px 50px -12px rgba(128, 0, 32, 0.15)', // Shadow hơi đỏ burgundy nhẹ
+            padding: '0px', // Để custom nội dung bên trong trán viền
+            maxWidth: '400px'
+          },
+        }}
+      />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
@@ -45,7 +63,7 @@ const AppRouter = () => {
 
         {/* Private Routes: Staff */}
         <Route element={<ProtectedRoute allowedRoles={['STAFF', 'ADMIN']} />}>
-          <Route path="/staff" element={<StaffDashboard store={mockStore}/>} />
+          <Route path="/staff" element={<StaffDashboard />} />
         </Route>
 
         {/* Default Route */}

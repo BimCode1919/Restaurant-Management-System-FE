@@ -1,9 +1,9 @@
 // src/features/staff/hooks/useStaffOrder.ts
 import { useState, useCallback, useMemo } from 'react';
 import { staffApi } from '../services/staffApi';
-import { 
-  TableResponse, ItemResponse, OrderType, 
-  TableStatus, ApiResponse, BillResponse 
+import {
+  TableResponse, ItemResponse, OrderType,
+  TableStatus, ApiResponse, BillResponse, ItemStatus
 } from '../types';
 
 export const useStaffOrder = () => {
@@ -54,7 +54,7 @@ export const useStaffOrder = () => {
         activeBillId = billRes.data.id;
       } else {
         // Lấy bill ID từ dữ liệu bàn có sẵn (Backend trả về currentBillId)
-        activeBillId = (selectedTable as any).currentBillId || (selectedTable as any).currentBill?.id; 
+        activeBillId = (selectedTable as any).currentBillId || (selectedTable as any).currentBill?.id;
       }
 
       if (!activeBillId) throw new Error("Could not find or create a Bill.");
@@ -80,6 +80,37 @@ export const useStaffOrder = () => {
     }
   }, [selectedTable, partySize, cart, refreshData, resetOrderFlow]);
 
+  const cancelOrderItem = useCallback(async (orderDetailId: number) => {
+    setLoading(true);
+    try {
+      // Gửi trực tiếp enum string "CANCELLED" cho backend
+      await staffApi.updateItemStatus(orderDetailId, ItemStatus.CANCELLED);
+
+      // Sau khi hủy xong, load lại dữ liệu để cập nhật UI
+      await refreshData();
+      return { success: true };
+    } catch (error: any) {
+      console.error("Cancel item failed", error);
+      alert(error.response?.data?.message || "Failed to cancel item");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [refreshData]);
+
+  const fetchFullBillDetails = useCallback(async (billId: number) => {
+    setLoading(true);
+    try {
+      const response = await staffApi.getOrdersByBill(billId);
+      return response.data; // Trả về OrderResponse[]
+    } catch (error) {
+      console.error("Failed to fetch bill details:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Quan trọng: Bọc actions trong useMemo để tránh re-render loop
   const actions = useMemo(() => ({
     setIsOrdering,
@@ -89,7 +120,9 @@ export const useStaffOrder = () => {
     setCart,
     refreshData,
     finalizeOrder,
-    resetOrderFlow
+    resetOrderFlow,
+    cancelOrderItem,
+    fetchFullBillDetails
   }), [refreshData, finalizeOrder, resetOrderFlow]);
 
   return {
