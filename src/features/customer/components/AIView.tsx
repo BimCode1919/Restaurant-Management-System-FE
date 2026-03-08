@@ -21,32 +21,37 @@ const AIView: React.FC<Props> = ({ ai }) => {
             <span className="material-symbols-outlined">smart_toy</span>
           </div>
           <div>
-            <h2 className="text-lg font-black uppercase tracking-tighter text-dark-gray">Trợ lý Thông minh</h2>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Smart Concierge Service</p>
+            <h2 className="text-lg font-black uppercase tracking-tighter text-dark-gray">
+              Smart Assistant
+            </h2>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              Smart Concierge Service
+            </p>
           </div>
         </div>
 
-        <textarea 
+        <textarea
           value={ai.query}
           onChange={e => ai.setQuery(e.target.value)}
-          placeholder="Ví dụ: 'Món nào cay?' hoặc 'Đặt bàn 10 người thế nào?'"
+          placeholder="Example: 'Which dishes are spicy?' or 'How can I reserve a table for 10 people?'"
           className="w-full rounded-3xl border-gray-100 bg-gray-50 focus:ring-2 focus:ring-cheese focus:bg-white p-5 text-sm min-h-[120px] outline-none transition-all resize-none text-dark-gray"
         />
 
         <div className="grid grid-cols-2 gap-3 mt-4">
-          <button 
+          <button
             disabled={ai.loading || !ai.query}
             onClick={() => ai.askAI('FOOD')}
             className="h-14 bg-burgundy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest disabled:opacity-30 shadow-lg shadow-burgundy/20 active:scale-95 transition-all"
           >
-            Gợi ý món ăn
+            Food Suggestions
           </button>
-          <button 
+
+          <button
             disabled={ai.loading || !ai.query}
             onClick={() => ai.askAI('GUIDE')}
             className="h-14 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest disabled:opacity-30 shadow-lg shadow-gray-900/20 active:scale-95 transition-all"
           >
-            Hỏi dịch vụ
+            Ask About Services
           </button>
         </div>
       </div>
@@ -55,21 +60,27 @@ const AIView: React.FC<Props> = ({ ai }) => {
       {ai.loading && (
         <div className="flex flex-col items-center justify-center py-10 gap-4">
           <div className="size-10 rounded-full border-4 border-cheese border-t-transparent animate-spin"></div>
-          <p className="text-cheese font-black text-[10px] uppercase tracking-[0.2em] animate-pulse">Đang kết nối nhà bếp...</p>
+          <p className="text-cheese font-black text-[10px] uppercase tracking-[0.2em] animate-pulse">
+            Connecting to the kitchen...
+          </p>
         </div>
       )}
 
       {ai.response && !ai.loading && (
         <div className="bg-white p-8 rounded-[2.5rem] border-l-[6px] border-cheese shadow-lg animate-in zoom-in duration-300 relative">
-          <button 
+          <button
             onClick={() => ai.setResponse('')}
             className="absolute top-4 right-4 size-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-300 transition-colors"
           >
             <span className="material-symbols-outlined text-sm">close</span>
           </button>
+
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cheese">Phản hồi từ AI</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cheese">
+              AI Response
+            </span>
           </div>
+
           <div className="prose prose-sm text-gray-600 leading-relaxed font-medium">
             {ai.response}
           </div>
