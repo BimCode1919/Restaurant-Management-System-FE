@@ -2,11 +2,12 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../features/auth/pages/Login'
 import AdminDashboard from '../features/admin/pages/AdminDashboard';
-import CustomerMenu from '../features/customer/pages/CustomerMenu';
+import CustomerPage from '../features/customer/pages/CustomerMenu';
 import StaffDashboard from '../features/staff/pages/StaffDashboard';
 import { Toaster } from 'react-hot-toast';
 import CheckoutView from '../features/cashier/pages/CheckoutView';
 import PaymentCallback from '../features/cashier/pages/PaymentCallback';
+import GuestLanding from '../features/auth/pages/GuestLanding';
 
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
 const KitchenBoard = () => <div>Kitchen Board</div>;
@@ -50,8 +51,9 @@ const AppRouter = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/menu" element={<CustomerMenu store={mockStore} />} />
+        <Route path="/customer" element={<CustomerPage store={mockStore} />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/session/:qrCode" element={<GuestLanding />} />
 
         {/* Private Routes: Admin & Manager */}
         <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>

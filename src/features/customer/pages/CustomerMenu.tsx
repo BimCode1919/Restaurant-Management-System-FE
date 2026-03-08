@@ -3,9 +3,9 @@ import { useCustomerMenu } from '../hooks/useCustomerMenu';
 import MenuListView from '../components/MenuListView';
 import AIView from '../components/AIView';
 import OrderStatusView from '../components/OrderStatusView';
-import OrderReviewModal from '../components/OrderReviewModal'; // Đảm bảo bạn tạo file này
+import OrderReviewModal from '../components/OrderReviewModal'; 
 
-const CustomerMenu: React.FC<{ store: any }> = ({ store }) => {
+const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
   const menuData = useCustomerMenu(store);
 
   if (menuData.loading && menuData.menu.length === 0) {
@@ -151,4 +151,4 @@ const CustomerMenu: React.FC<{ store: any }> = ({ store }) => {
   );
 };
 
-export default CustomerMenu;
+export default CustomerPage;
