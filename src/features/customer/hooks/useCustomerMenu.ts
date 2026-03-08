@@ -1,38 +1,63 @@
 import { useState, useEffect } from 'react';
 import { MenuItem, OrderItem } from '../types';
 import { customerApi } from '../services/customerApi';
-import { getAIFoodSuggestions } from '../services/geminiService';
 
 export const useCustomerMenu = (store: any) => {
-    // 1. Basic UI States
     const [activeTab, setActiveTab] = useState<'MENU' | 'AI' | 'STATUS'>('MENU');
     const [loading, setLoading] = useState(true);
     const [menu, setMenu] = useState<MenuItem[]>([]);
     const [cart, setCart] = useState<OrderItem[]>([]);
+    const [currentBillId, setCurrentBillId] = useState<number | null>(null);
 
-    // 2. Modal & Interaction States
+    // UI States
     const [isReviewOpen, setIsReviewOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+    const [isPartyModalOpen, setIsPartyModalOpen] = useState(true);
 
-    // 3. AI States
-    const [aiResponse, setAiResponse] = useState('');
-    const [loadingAI, setLoadingAI] = useState(false);
-    const [query, setQuery] = useState('');
+    // Initial Session Setup
+    const handleInitializeSession = async (partySize: number) => {
+        // 1. Kiểm tra tableId từ store (được truyền từ AppRouter)
+        const tableId = store?.tableId;
 
-    // --- LOGIC FETCH MENU ---
+        if (!tableId) {
+            alert("Table ID not found in token. Please scan QR again.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // 2. Ép kiểu về number và đưa vào mảng theo đúng format BE yêu cầu
+            const payload = {
+                tableIds: [Number(tableId)], // BE nhận mảng: [10]
+                partySize: Number(partySize),
+                reservationId: null
+            };
+
+            console.log("Sending Payload:", payload); // Debug xem có bị null không
+
+            const res: any = await customerApi.createBill(payload);
+
+            // Lưu Bill ID để dùng cho các bước sau
+            const newBillId = res.data?.data?.id || res.data?.id;
+            setCurrentBillId(newBillId);
+            setIsPartyModalOpen(false);
+
+        } catch (error) {
+            console.error("Create Bill Error:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Load Menu
     useEffect(() => {
         const fetchMenu = async () => {
             try {
-                setLoading(true);
                 const res: any = await customerApi.getAvailableMenu();
-
-                if (res.data && res.data.data) {
-                    setMenu(res.data.data);
-                } else if (Array.isArray(res.data)) {
-                    setMenu(res.data);
-                }
+                setMenu(res.data?.data || res.data || []);
             } catch (error) {
-                console.error("Lỗi tải menu:", error);
+                console.error("Menu Loading Error:", error);
             } finally {
                 setLoading(false);
             }
@@ -40,15 +65,11 @@ export const useCustomerMenu = (store: any) => {
         fetchMenu();
     }, []);
 
-    // --- LOGIC GIỎ HÀNG ---
     const addToCart = (item: MenuItem) => {
         setCart(prev => {
             const existing = prev.find(i => i.id === item.id);
             if (existing) {
-                return prev.map(i => i.id === item.id
-                    ? { ...i, quantity: i.quantity + 1 }
-                    : i
-                );
+                return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
             }
             return [...prev, { ...item, quantity: 1 } as OrderItem];
         });
@@ -57,85 +78,52 @@ export const useCustomerMenu = (store: any) => {
     const updateCartQty = (id: number, delta: number) => {
         setCart(prev => prev.map(item => {
             if (item.id === id) {
-                const newQty = Math.max(0, item.quantity + delta);
-                return { ...item, quantity: newQty };
+                return { ...item, quantity: Math.max(0, item.quantity + delta) };
             }
             return item;
-        }).filter(item => item.quantity > 0)); 
+        }).filter(item => item.quantity > 0));
     };
 
-    // --- LOGIC ĐẶT MÓN ---
+    // Place Order Logic
     const handlePlaceOrder = async () => {
         if (cart.length === 0) return;
+        const billId = currentBillId || Number(localStorage.getItem('activeBillId'));
 
-        // billId lấy từ store (mặc định là 1 nếu chưa có từ QR)
-        const billId = store?.currentBillId || 1;
-
-        const request = {
-            billId: billId,
-            orderType: 'AT_TABLE' as const,
-            items: cart.map(i => ({
-                itemId: i.id,
-                quantity: i.quantity,
-                notes: ""
-            }))
-        };
+        if (!billId) {
+            alert("No active session found. Please refresh.");
+            return;
+        }
 
         try {
             setLoading(true);
-            await customerApi.createOrder(request);
+            await customerApi.createOrder({
+                billId: billId,
+                orderType: 'AT_TABLE',
+                items: cart.map(i => ({
+                    itemId: i.id,
+                    quantity: i.quantity,
+                    notes: ""
+                }))
+            });
             setCart([]);
-            setIsReviewOpen(false); // Đóng modal review sau khi đặt thành công
-            alert("Đặt món thành công! Vui lòng chờ nhà bếp xác nhận.");
+            setIsReviewOpen(false);
             setActiveTab('STATUS');
+            alert("Order create successfully!");
         } catch (error: any) {
-            console.error("Lỗi đặt món:", error);
-            alert(error.response?.data?.message || "Không thể gửi đơn hàng. Vui lòng thử lại.");
+            alert(error.response?.data?.message || "Order failed.");
         } finally {
             setLoading(false);
         }
     };
 
-    // --- LOGIC AI ---
-    const askAI = async () => {
-        if (!query.trim()) return;
-        setLoadingAI(true);
-        try {
-            const res = await getAIFoodSuggestions(query, menu);
-            setAiResponse(res || "Culina AI chưa tìm thấy gợi ý phù hợp.");
-        } catch (e) {
-            setAiResponse("Lỗi kết nối với trí tuệ nhân tạo.");
-        } finally {
-            setLoadingAI(false);
-        }
-    };
-
-    // Trả về tất cả dữ liệu và hàm cần thiết cho UI
     return {
-        activeTab,
-        setActiveTab,
-        menu,
-        loading,
-        cart,
-        addToCart,
-        updateCartQty,
+        activeTab, setActiveTab,
+        menu, loading,
+        cart, addToCart, updateCartQty,
         cartTotal: cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0),
-        
-        // Modal states
-        isReviewOpen,
-        setIsReviewOpen,
-        selectedItem,
-        setSelectedItem,
-        
-        // Actions
-        handlePlaceOrder,
-        ai: { 
-            query, 
-            setQuery, 
-            response: aiResponse, 
-            setResponse: setAiResponse, 
-            loading: loadingAI, 
-            askAI 
-        }
+        isReviewOpen, setIsReviewOpen,
+        selectedItem, setSelectedItem,
+        isPartyModalOpen, handleInitializeSession,
+        currentBillId, handlePlaceOrder
     };
 };

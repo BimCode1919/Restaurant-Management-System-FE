@@ -13,6 +13,9 @@ export const customerApi = {
         return axiosClient.get(`/items/search?keyword=${keyword}&page=${page}&size=${size}`);
     },
 
+    createBill: (data: { tableIds: number[], partySize: number, reservationId: number }) => 
+    axiosClient.post('/bills', data),
+
     // Tạo đơn hàng mới (@PostMapping)
     // Request body khớp với CreateOrderRequest của BE
     createOrder: (orderRequest: {

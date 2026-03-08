@@ -8,6 +8,7 @@ import { Toaster } from 'react-hot-toast';
 import CheckoutView from '../features/cashier/pages/CheckoutView';
 import PaymentCallback from '../features/cashier/pages/PaymentCallback';
 import GuestLanding from '../features/auth/pages/GuestLanding';
+import { getGuestInfo } from '../features/customer/jwtUtils';
 
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
 const KitchenBoard = () => <div>Kitchen Board</div>;
@@ -16,17 +17,17 @@ const Unauthorized = () => <div>Bạn không có quyền truy cập!</div>;
 const AppRouter = () => {
   const userData = localStorage.getItem('user');
   const user = userData ? JSON.parse(userData) : null;
+  const guestInfo = getGuestInfo();
 
   // Tạo một object store giả lập hoặc lấy hàm logout từ context/service
   const mockStore = {
-    user: user?.info || {}, // Thông tin user từ BE
+    tableNumber: guestInfo?.tableNumber || "N/A",
+    tableId: guestInfo?.tableId,
+    user: user?.info || {},
     logout: () => {
       localStorage.removeItem('user');
       window.location.href = '/login';
     },
-    // Các dữ liệu khác Dashboard cần (nếu chưa chuyển hết sang hook)
-    tables: [{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }],
-    menu: []
   };
 
   return (

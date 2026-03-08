@@ -3,7 +3,8 @@ import { useCustomerMenu } from '../hooks/useCustomerMenu';
 import MenuListView from '../components/MenuListView';
 import AIView from '../components/AIView';
 import OrderStatusView from '../components/OrderStatusView';
-import OrderReviewModal from '../components/OrderReviewModal'; 
+import OrderReviewModal from '../components/OrderReviewModal';
+import PartySizeModal from '../components/PartySizeModal'
 
 const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
   const menuData = useCustomerMenu(store);
@@ -13,7 +14,7 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
       <div className="flex h-screen items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy"></div>
         <p className="ml-3 font-bold text-gray-500 uppercase text-[10px] tracking-widest">
-          Đang tải thực đơn...
+          Loading menu...
         </p>
       </div>
     );
@@ -29,10 +30,8 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
             onView={(item) => menuData.setSelectedItem(item)}
           />
         );
-      case 'AI':
-        return <AIView ai={menuData.ai} />;
       case 'STATUS':
-        return <OrderStatusView billId={store?.currentBillId || 1} />;
+        return <OrderStatusView billId={menuData.currentBillId || Number(localStorage.getItem('activeBillId')) || 0} />;
       default:
         return null;
     }
@@ -40,7 +39,11 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col font-sans relative">
-      {/* Header */}
+      <PartySizeModal
+        isOpen={menuData.isPartyModalOpen}
+        onConfirm={menuData.handleInitializeSession}
+      />
+
       <header className="bg-white p-6 sticky top-0 z-50 flex justify-between items-center border-b border-gray-50">
         <div className="flex items-center gap-3">
           <div className="size-10 bg-burgundy rounded-xl flex items-center justify-center text-white shadow-lg shadow-burgundy/20">
@@ -48,29 +51,25 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
           </div>
           <h1 className="text-xl font-black text-dark-gray uppercase tracking-tighter italic">Culina</h1>
         </div>
-        <div className="px-4 py-2 bg-gray-100 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-500 border border-gray-200">
-          Bàn số {store?.tableNumber || "05"}
+        <div className="px-4 py-2 bg-burgundy/10 rounded-full text-[10px] font-black uppercase tracking-widest text-burgundy border border-burgundy/20">
+          Table {store?.tableNumber || "N/A"}
         </div>
       </header>
 
       {/* Navigation Tabs */}
       <nav className="sticky top-[89px] z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 flex p-2 gap-2">
-        {(['MENU', 'AI', 'STATUS'] as const).map(tab => (
+        {['MENU', 'STATUS'].map(tab => (
           <button
             key={tab}
-            onClick={() => menuData.setActiveTab(tab)}
-            className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${menuData.activeTab === tab
-              ? 'bg-burgundy text-white shadow-xl shadow-burgundy/20 scale-[1.02]'
-              : 'text-gray-400 hover:bg-gray-50'
-              }`}
+            onClick={() => menuData.setActiveTab(tab as any)}
+            className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${menuData.activeTab === tab ? 'bg-burgundy text-white shadow-xl shadow-burgundy/20' : 'text-gray-400'}`}
           >
-            {tab === 'STATUS' ? 'Đơn hàng' : tab}
+            {tab === 'STATUS' ? 'My Orders' : 'Menu'}
           </button>
         ))}
       </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 pb-32 max-w-2xl mx-auto w-full overflow-y-auto">
+      <main className="flex-1 p-6 pb-32 max-w-2xl mx-auto w-full">
         {renderContent()}
       </main>
 
