@@ -8,5 +8,9 @@ export const authApi = {
   
   refreshToken: (token: string): Promise<ApiResponse<AuthResponse>> => {
     return axiosClient.post('/auth/refresh-token', { refreshToken: token });
+  },
+  
+  createGuestSession: (qrCode: string): Promise<ApiResponse<AuthResponse>> => {
+    return axiosClient.post(`/auth/guest-session/${qrCode}`);
   }
 };

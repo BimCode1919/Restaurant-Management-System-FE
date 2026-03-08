@@ -39,6 +39,9 @@ const Login: React.FC = () => {
         case 'STAFF':
           navigate('/staff');
           break;
+        case 'CASHIER':
+          navigate('/cashier');
+          break;
         default:
           navigate('/menu');
       }
