@@ -5,6 +5,8 @@ import AdminDashboard from '../features/admin/pages/AdminDashboard';
 import CustomerMenu from '../features/customer/pages/CustomerMenu';
 import StaffDashboard from '../features/staff/pages/StaffDashboard';
 import { Toaster } from 'react-hot-toast';
+import CheckoutView from '../features/cashier/pages/CheckoutView';
+import PaymentCallback from '../features/cashier/pages/PaymentCallback';
 
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
 const KitchenBoard = () => <div>Kitchen Board</div>;
@@ -64,6 +66,15 @@ const AppRouter = () => {
         {/* Private Routes: Staff */}
         <Route element={<ProtectedRoute allowedRoles={['STAFF', 'ADMIN']} />}>
           <Route path="/staff" element={<StaffDashboard />} />
+        </Route>
+
+        {/* Private Routes: Cashier & Payment Handling */}
+        <Route element={<ProtectedRoute allowedRoles={['STAFF', 'ADMIN', 'CASHIER']} />}>
+          {/* Dashboard chính của Thu ngân */}
+          <Route path="/cashier" element={<CheckoutView />} />
+
+          {/* Route nhận kết quả trả về từ cổng thanh toán MoMo */}
+          <Route path="/cashier/payment-callback" element={<PaymentCallback />} />
         </Route>
 
         {/* Default Route */}
