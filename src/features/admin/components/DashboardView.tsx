@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { adminApi } from "../services/adminApi";
 import {
   LineChart,
   Line,
@@ -29,28 +30,86 @@ interface Props {
   }[];
 }
 
-const DashboardView: React.FC<Props> = ({
-  stats,
-  salesData = [],
-  recentOrders = [],
-}) => {
+const DashboardView: React.FC = () => {
+
+  const [stats, setStats] = useState({
+    revenueToday: 0,
+    ordersToday: 0,
+    activeTables: 0,
+    lowStock: 0
+  });
+
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  const loadDashboard = async () => {
+    try {
+
+      const billsRes = await adminApi.getBills();
+      const ordersRes = await adminApi.getOrders();
+      const tablesRes = await adminApi.getTables();
+      const batchesRes = await adminApi.getExpiringBatches();
+
+      const bills = billsRes.data.data || [];
+      const orders = ordersRes.data.data || [];
+      const tables = tablesRes.data.data || [];
+      const batches = batchesRes.data.data || [];
+
+      const today = new Date().toISOString().slice(0,10);
+
+      const revenueToday = bills
+        .filter((b:any)=>b.createdAt?.startsWith(today))
+        .reduce((sum:number,b:any)=>sum+b.totalAmount,0);
+
+      const ordersToday = orders.filter((o:any)=>
+        o.createdAt?.startsWith(today)
+      ).length;
+
+      const activeTables = tables.filter(
+        (t:any)=>t.status==="OCCUPIED"
+      ).length;
+
+      const lowStock = batches.length;
+
+      setStats({
+        revenueToday,
+        ordersToday,
+        activeTables,
+        lowStock
+      });
+
+      // chart
+      const chart = bills.slice(-7).map((b:any)=>({
+        name: b.createdAt?.slice(5,10),
+        revenue: b.totalAmount
+      }));
+
+      setSalesData(chart);
+
+      // recent orders
+      const recent = orders.slice(-5).map((o:any)=>({
+        id: o.id,
+        table: o.tableId,
+        total: o.totalAmount,
+        status: o.status
+      }));
+
+      setRecentOrders(recent);
+
+    } catch(err){
+      console.error("Dashboard error:",err);
+    }
+  };
+
   const cards = [
-    {
-      label: "Revenue Today",
-      value: `$${stats?.revenueToday  ?? 0}`,
-    },
-    {
-      label: "Orders Today",
-      value: stats?.ordersToday ?? 0,
-    },
-    {
-      label: "Active Tables",
-      value: stats?.activeTables ?? 0,
-    },
-    {
-      label: "Low Inventory",
-      value: stats?.lowStock ?? 0,
-    },
+    { label:"Revenue Today", value:`$${stats.revenueToday}` },
+    { label:"Orders Today", value:stats.ordersToday },
+    { label:"Active Tables", value:stats.activeTables },
+    { label:"Low Inventory", value:stats.lowStock }
   ];
 
   return (

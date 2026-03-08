@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { adminApi } from '../services/adminApi';
-import { MenuItem, AdminTab, OrderItem } from '../types';
+import { MenuItem, AdminTab, OrderItem  } from '../types';
+
 
 export const useAdminDashboard = (store: any) => {
-    
     // --- DATA STATES ---
     const [activeTab, setActiveTab] = useState<AdminTab>('DASHBOARD');
     const [menu, setMenu] = useState<MenuItem[]>([]);
@@ -21,15 +21,8 @@ export const useAdminDashboard = (store: any) => {
     const [selectedTable, setSelectedTable] = useState('1');
 
     // ================= 1. FETCH DATA (READ) =================
-    const fetchDailyRevenue = async () => {
-        try {
-            const response = await adminApi.getDailyRevenue();
-            setDailyRevenue(response.data);
-        } catch (error) {
-            console.error("Lỗi khi lấy doanh thu hàng ngày:", error);
-        }
-        };
-    const fetchMenu = async () => {
+
+        const fetchMenu = async () => {
         setLoading(true);
         try {
             const response = await adminApi.getAllItems(0, 50);
@@ -53,6 +46,7 @@ export const useAdminDashboard = (store: any) => {
         if (activeTab === 'MENU') {
             fetchMenu();
         }
+
     }, [activeTab]);
 
     // ================= 2. MENU ACTIONS (CREATE / UPDATE / DELETE) =================
@@ -110,7 +104,6 @@ export const useAdminDashboard = (store: any) => {
             }
         }
     };
-
     // ================= 3. MANUAL ORDER ACTIONS (POS) =================
     const addToManualCart = (item: MenuItem) => {
         setManualCart(prev => {
@@ -144,27 +137,31 @@ export const useAdminDashboard = (store: any) => {
     };
 
     // ================= EXPORTS =================
-    return {
-        activeTab,
-        setActiveTab,
-        menu,
-        loading,
-        fetchMenu,
-        menuSearch,
-        setMenuSearch,
-        isMenuModalOpen,
-        setIsMenuModalOpen,
-        editingMenuItem,
-        setEditingMenuItem,
-        handleMenuSubmit,
-        deleteMenuItem,
-        isManualOrderOpen,
-        setIsManualOrderOpen,
-        manualCart,
-        selectedTable,
-        setSelectedTable,
-        addToManualCart,
-        removeFromManualCart,
-        submitManualOrder,
-    };
+return {
+    activeTab,
+    setActiveTab,
+    menu,
+    loading,
+    fetchMenu,
+    //MENU SEARCH
+    menuSearch,
+    setMenuSearch,
+    //MENU MODAL
+    isMenuModalOpen,
+    setIsMenuModalOpen,
+    editingMenuItem,
+    setEditingMenuItem,
+    handleMenuSubmit,
+    deleteMenuItem,
+    //ORDER
+    isManualOrderOpen,
+    setIsManualOrderOpen,
+    manualCart,
+    selectedTable,
+    setSelectedTable,
+    addToManualCart,
+    removeFromManualCart,
+    submitManualOrder,
+
+};
 };
