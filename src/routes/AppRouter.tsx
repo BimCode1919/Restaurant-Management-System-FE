@@ -9,10 +9,9 @@ import CheckoutView from '../features/cashier/pages/CheckoutView';
 import PaymentCallback from '../features/cashier/pages/PaymentCallback';
 import GuestLanding from '../features/auth/pages/GuestLanding';
 import { getGuestInfo } from '../features/customer/jwtUtils';
-
+import KitchenPage from '../features/kitchen/pages/KitchenPage';
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
-const KitchenBoard = () => <div>Kitchen Board</div>;
-const Unauthorized = () => <div>Bạn không có quyền truy cập!</div>;
+const Unauthorized = () => <div>Where ur permission?</div>;
 
 const AppRouter = () => {
   const userData = localStorage.getItem('user');
@@ -23,6 +22,7 @@ const AppRouter = () => {
   const mockStore = {
     tableNumber: guestInfo?.tableNumber || "N/A",
     tableId: guestInfo?.tableId,
+    orders: [], // Bạn sẽ thay thế bằng logic lấy orders thật từ API hoặc context
     user: user?.info || {},
     logout: () => {
       localStorage.removeItem('user');
@@ -63,7 +63,7 @@ const AppRouter = () => {
 
         {/* Private Routes: Kitchen */}
         <Route element={<ProtectedRoute allowedRoles={['CHEF', 'ADMIN']} />}>
-          <Route path="/kitchen" element={<KitchenBoard />} />
+          <Route path="/kitchen" element={<KitchenPage store={mockStore} />} />
         </Route>
 
         {/* Private Routes: Staff */}

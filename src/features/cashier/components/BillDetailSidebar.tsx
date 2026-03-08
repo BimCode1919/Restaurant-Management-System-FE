@@ -1,5 +1,6 @@
 import React from 'react';
 import { BillResponse, PaymentMethod } from '../types';
+import { PaymentActionCard } from './PaymentActionCard';
 
 interface BillDetailSidebarProps {
   bill: BillResponse;
@@ -20,8 +21,8 @@ export const BillDetailSidebar: React.FC<BillDetailSidebarProps> = ({
         </p>
       </div>
 
-      {/* List Items */}
-      <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2">
+      {/* List Items - Giữ nguyên phần scroll này */}
+      <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2 custom-scrollbar">
         {bill.orders?.flatMap(order => order.items).map((item, idx) => (
           <div key={idx} className="flex justify-between items-start border-b border-gray-50 pb-3">
             <div>
@@ -33,8 +34,8 @@ export const BillDetailSidebar: React.FC<BillDetailSidebarProps> = ({
         ))}
       </div>
 
-      {/* Summary & Actions */}
-      <div className="bg-gray-50 rounded-[2rem] p-6 space-y-4">
+      {/* Summary Section - Chỉ giữ lại phần tính toán tiền */}
+      <div className="bg-gray-50 rounded-[2.5rem] p-6 space-y-4 shadow-inner">
         <div className="space-y-2 border-b border-gray-200 pb-4">
           <div className="flex justify-between text-xs font-bold">
             <span className="text-gray-400 uppercase">Subtotal</span>
@@ -47,7 +48,7 @@ export const BillDetailSidebar: React.FC<BillDetailSidebarProps> = ({
               <span className="text-olive">-{bill.discountAmount?.toLocaleString()}đ</span>
               <button
                 onClick={onApplyDiscount}
-                className="bg-olive/10 text-olive text-[8px] px-2 py-1 rounded-full border border-olive/20 hover:bg-olive hover:text-white transition-all"
+                className="bg-olive/10 text-olive text-[8px] px-2 py-1 rounded-full border border-olive/20 hover:bg-olive hover:text-white transition-all font-black"
               >
                 APPLY BEST
               </button>
@@ -55,34 +56,21 @@ export const BillDetailSidebar: React.FC<BillDetailSidebarProps> = ({
           </div>
         </div>
 
+        {/* Chỗ này mình bỏ cái nút bấm cũ đi, chỉ hiện Total thôi */}
         <div className="flex justify-between items-end">
           <span className="text-[10px] font-black text-dark-gray uppercase tracking-widest">Total Amount</span>
           <span className="text-3xl font-black text-burgundy italic tracking-tighter">
             {bill.finalPrice?.toLocaleString()}đ
           </span>
         </div>
-
-        {/* Buttons */}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <button
-            disabled={loading}
-            onClick={() => onCheckout(PaymentMethod.CASH)}
-            className="bg-dark-gray text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex flex-col items-center gap-1"
-          >
-            <span>Cash</span>
-            <span className="opacity-50 text-[8px]">Thanh toán mặt</span>
-          </button>
-
-          <button
-            disabled={loading}
-            onClick={() => onCheckout(PaymentMethod.MOMO)}
-            className="bg-[#A50064] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all flex flex-col items-center gap-1"
-          >
-            <span>MoMo</span>
-            <span className="opacity-70 text-[8px]">QR Payment</span>
-          </button>
-        </div>
       </div>
+
+      {/* CHÈN COMPONENT THANH TOÁN XUỐNG DƯỚI CÙNG */}
+      <PaymentActionCard 
+        finalAmount={bill.finalPrice} 
+        onPay={onCheckout} 
+        isProcessing={loading} 
+      />
     </div>
   );
 };
