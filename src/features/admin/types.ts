@@ -41,5 +41,32 @@ export interface MenuItem {
 export interface OrderItem extends MenuItem {
   quantity: number;
 }
+export interface Ingredient {
+  id: number;
+  name: string;
+  stockQuantity: number;
+  unit: string;
+  updatedAt?: string | null;
+}
+export interface DashboardStats {
+  revenueToday: number
+  ordersToday: number
+  activeTables: number
+  lowInventory: number
+}
 
+export interface RecentOrder {
+  id: number
+  billId: number
+  status: string
+  createdAt: string
+}
+export interface Staff {
+  id: number
+  fullName: string
+  email: string
+  role: string
+  phone?: string
+  active?: boolean
+}
 export type AdminTab = 'DASHBOARD' | 'MENU' | 'INVENTORY' | 'REPORTS' | 'STAFF' | 'VOUCHER';

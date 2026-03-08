@@ -68,3 +68,16 @@ export interface InventoryItem {
   unit: string;
   status: 'CRITICAL' | 'LOW' | 'HEALTHY';
 }
+export interface IngredientBatch {
+  id: number;
+  ingredientName: string;
+  quantity: number;
+  unit: string;
+  expiryDate: string;
+}
+export interface Ingredient {
+  id: number
+  name: string
+  stockQuantity: number
+  unit: string
+}
