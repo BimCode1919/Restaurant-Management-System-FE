@@ -9,33 +9,24 @@ interface PaymentActionCardProps {
 
 export const PaymentActionCard: React.FC<PaymentActionCardProps> = ({ finalAmount, onPay, isProcessing }) => {
     return (
-        <div className="mt-auto pt-6 border-t border-gray-100">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Payable Amount</p>
-                    <p className="text-4xl font-black text-burgundy italic tracking-tighter">
-                        {finalAmount?.toLocaleString()}đ
-                    </p>
-                </div>
-            </div>
-
-            <div className="flex gap-4">
+        <div className="mt-6 pt-6 border-t border-gray-100">
+            <div className="grid grid-cols-2 gap-3">
                 <button
                     disabled={isProcessing}
                     onClick={() => onPay(PaymentMethod.CASH)}
-                    className="flex-1 bg-dark-gray hover:bg-black text-white py-5 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest transition-all flex flex-col items-center gap-1 disabled:opacity-50"
+                    className="group flex-1 bg-dark-gray hover:bg-black text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all flex flex-col items-center gap-0.5 disabled:opacity-50"
                 >
-                    <span>Cash Payment</span>
-                    <span className="text-[8px] font-normal opacity-60 italic">Nhận tiền mặt</span>
+                    <span className="group-hover:scale-110 transition-transform">Cash</span>
+                    <span className="text-[7px] font-normal opacity-40 lowercase tracking-normal italic">tiền mặt</span>
                 </button>
 
                 <button
                     disabled={isProcessing}
                     onClick={() => onPay(PaymentMethod.MOMO)}
-                    className="flex-1 bg-[#A50064] hover:opacity-90 text-white py-5 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest transition-all flex flex-col items-center gap-1 disabled:opacity-50"
+                    className="group flex-1 bg-[#A50064] hover:bg-[#850050] text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all flex flex-col items-center gap-0.5 disabled:opacity-50 shadow-lg shadow-[#A50064]/20"
                 >
-                    <span>MoMo Wallet</span>
-                    <span className="text-[8px] font-normal opacity-80 italic">Cổng thanh toán</span>
+                    <span className="group-hover:scale-110 transition-transform">MoMo</span>
+                    <span className="text-[7px] font-normal opacity-60 lowercase tracking-normal italic">ví điện tử</span>
                 </button>
             </div>
         </div>

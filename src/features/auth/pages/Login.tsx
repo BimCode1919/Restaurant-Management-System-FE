@@ -33,7 +33,7 @@ const Login: React.FC = () => {
         case 'MANAGER':
           navigate('/admin');
           break;
-        case 'KITCHEN':
+        case 'CHEF':
           navigate('/kitchen');
           break;
         case 'STAFF':

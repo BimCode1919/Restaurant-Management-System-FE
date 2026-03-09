@@ -83,14 +83,14 @@ const CheckoutView: React.FC = () => {
               />
             </div>
 
-            {/* Phần Action Card cố định ở dưới cùng sidebar */}
+            {/* Phần Action Card cố định ở dưới cùng sidebar
             <div className="p-8 bg-white border-t border-gray-50">
               <PaymentActionCard
                 finalAmount={bill.finalPrice}
                 onPay={processCheckout} // Gắn hàm thanh toán MoMo/Cash
                 isProcessing={loading}
               />
-            </div>
+            </div> lỗi double payment khúc này*/}
           </div>
         ) : (
           <div className="h-full flex items-center justify-center p-12 text-center">
