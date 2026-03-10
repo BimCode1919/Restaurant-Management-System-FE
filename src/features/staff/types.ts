@@ -126,6 +126,17 @@ export interface TableResponse {
   qrCode?: string;
 }
 
+export interface OrderDetailResponse {
+    id: number;
+    itemId: number;
+    itemName: string;
+    quantity: number;
+    price: number;
+    subtotal: number;
+    itemStatus: ItemStatus;
+    notes: string;
+}
+
 /**
  * REQUESTS (Dùng cho API POST/PUT)
  */
@@ -146,4 +157,13 @@ export interface CreateOrderRequest {
   billId: number;
   orderType?: OrderType;
   items: OrderDetailRequest[];
+}
+
+export interface TableActionModalProps {
+    tableNumber: string;
+    billData: any;
+    onClose: () => void;
+    onUpdateOrder: () => void;
+    onCancelItem: (orderDetailId: number) => void;
+    onMassUpdate: (orderId: number) => void; // Thêm function này
 }

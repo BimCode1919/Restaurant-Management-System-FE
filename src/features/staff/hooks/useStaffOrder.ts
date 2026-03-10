@@ -111,6 +111,21 @@ export const useStaffOrder = () => {
     }
   }, []);
 
+  const massUpdateOrderStatus = useCallback(async (orderId: number) => {
+    setLoading(true);
+    try {
+      const response = await staffApi.massUpdateOrderStatus(orderId);
+      await refreshData(); // Refresh lại trạng thái bàn sau khi cập nhật thành công
+      return { success: true, data: response.data };
+    } catch (error: any) {
+      console.error("Mass update failed", error);
+      alert(error.response?.data?.message || "Failed to send order to kitchen");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [refreshData]);
+
   // Quan trọng: Bọc actions trong useMemo để tránh re-render loop
   const actions = useMemo(() => ({
     setIsOrdering,
@@ -122,8 +137,9 @@ export const useStaffOrder = () => {
     finalizeOrder,
     resetOrderFlow,
     cancelOrderItem,
-    fetchFullBillDetails
-  }), [refreshData, finalizeOrder, resetOrderFlow]);
+    fetchFullBillDetails,
+    massUpdateOrderStatus
+  }), [refreshData, finalizeOrder, resetOrderFlow, massUpdateOrderStatus]);
 
   return {
     state: { tables, menu, isOrdering, orderStep, selectedTable, partySize, cart, loading },

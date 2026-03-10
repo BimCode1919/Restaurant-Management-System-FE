@@ -168,8 +168,23 @@ const StaffDashboard: React.FC = () => {
               setManageModal({ show: false, table: null, fullBillData: null });
             }}
             onCancelItem={async (id) => {
+              // Nghiệp vụ: Hủy từng món lẻ khi chưa xác nhận
               const res = await actions.cancelOrderItem(id);
               if (res?.success) handleManageTable(manageModal.table!);
+            }}
+            // THÊM PROPS MỚI CHO MASS UPDATE
+            onMassUpdate={async (orderId) => {
+              try {
+                // Gọi API chuyển toàn bộ món của Order này sang PREPARING
+                const res = await actions.massUpdateOrderStatus(orderId);
+                if (res?.success) {
+                  toast.success(`Order #${orderId} sent to kitchen!`);
+                  // Refresh lại dữ liệu trong Modal để cập nhật status món
+                  handleManageTable(manageModal.table!);
+                }
+              } catch (error) {
+                // Lỗi đã được xử lý bằng alert trong hook, hoặc dùng toast ở đây
+              }
             }}
           />
         )}
