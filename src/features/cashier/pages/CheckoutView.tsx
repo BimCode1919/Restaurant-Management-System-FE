@@ -1,46 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { useStaffOrder } from '../../staff/hooks/useStaffOrder'; // Tái sử dụng để lấy danh sách bàn
+import { useStaffOrder } from '../../staff/hooks/useStaffOrder';
 import { TableSelectionGrid } from '../components/TableSelectionGrid';
 import { BillDetailSidebar } from '../components/BillDetailSidebar';
-import { PaymentActionCard } from '../components/PaymentActionCard';
+import { MergeBillModal } from '../components/MergeBillModal'; // Component mới
 import { useCashier } from '../hooks/useCashier';
-import { TableResponse, TableStatus, PaymentMethod } from '../types';
+import { TableResponse, TableStatus } from '../types';
 
 const CheckoutView: React.FC = () => {
-  // Lấy dữ liệu bàn từ hệ thống chung
   const { state: staffState, actions: staffActions } = useStaffOrder();
+  const { bill, loading, loadBill, handleApplyDiscount, processCheckout, handleMergeBills } = useCashier();
 
-  // Logic nghiệp vụ của Cashier
-  const { bill, loading, loadBill, handleApplyDiscount, processCheckout } = useCashier();
-
-  // Trạng thái bàn đang được chọn trên UI
   const [selectedTableId, setSelectedTableId] = useState<number | undefined>(undefined);
+  const [showMergeModal, setShowMergeModal] = useState(false);
 
-  // Tự động làm mới dữ liệu bàn mỗi 5 giây
   useEffect(() => {
     staffActions.refreshData();
     const interval = setInterval(() => staffActions.refreshData(), 5000);
     return () => clearInterval(interval);
   }, [staffActions]);
 
-  // Xử lý khi click vào bàn
+  const occupiedTables = staffState.tables.filter(t => t.status === TableStatus.OCCUPIED);
+
   const handleSelectTable = (table: TableResponse) => {
     if (table.status === TableStatus.OCCUPIED && table.currentBill?.id) {
       setSelectedTableId(table.id);
-      loadBill(table.currentBill.id); // Gọi API lấy chi tiết Bill
+      loadBill(table.currentBill.id);
     }
   };
 
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      localStorage.removeItem('user'); // Xóa token/user data
-      window.location.href = '/login';
+  const onConfirmMerge = async (billIds: number[]) => {
+    const newBill = await handleMergeBills(billIds);
+    if (newBill) {
+      setShowMergeModal(false);
+      staffActions.refreshData(); // Refresh để cập nhật lại danh sách bàn
     }
   };
 
   return (
     <div className="flex h-screen bg-[#F8F9FA] overflow-hidden font-display">
-      {/* PHẦN TRÁI: DANH SÁCH BÀN CẦN THANH TOÁN */}
       <main className="flex-1 overflow-y-auto p-10">
         <header className="mb-10 flex justify-between items-start">
           <div>
@@ -48,93 +45,75 @@ const CheckoutView: React.FC = () => {
               Cashier Terminal
             </h1>
             <p className="text-gray-400 font-bold text-[10px] mt-2 uppercase tracking-[0.2em]">
-              Select an occupied table to process payment
+              Process payments or merge bills for customers
             </p>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Trạng thái hệ thống */}
-            <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
-              <span className="text-[10px] font-black text-olive uppercase italic">System Active</span>
-              <div className="size-2 rounded-full bg-olive animate-pulse" />
-            </div>
-
-            {/* NÚT ĐĂNG XUẤT MỚI */}
+            {/* Nút Merge Bill */}
             <button
-              onClick={handleLogout}
-              className="group flex items-center gap-3 bg-white px-5 py-3 rounded-2xl shadow-sm border border-gray-100 hover:border-burgundy hover:bg-burgundy/5 transition-all duration-300"
+              onClick={() => setShowMergeModal(true)}
+              className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 hover:border-olive group transition-all"
             >
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black text-dark-gray uppercase tracking-widest group-hover:text-burgundy transition-colors">Logout</span>
-                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Exit Terminal</span>
-              </div>
-              <div className="size-8 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-burgundy group-hover:text-white transition-all">
-                <span className="material-symbols-outlined text-lg">logout</span>
-              </div>
+              <span className="material-symbols-outlined text-olive group-hover:rotate-180 transition-transform duration-500">call_merge</span>
+              <span className="text-[10px] font-black text-dark-gray uppercase tracking-widest">Merge Bills</span>
+            </button>
+
+            {/* Logout (đã tối ưu UI) */}
+            <button onClick={() => window.confirm("Logout?") && (window.location.href = '/login')} className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:text-burgundy">
+              <span className="material-symbols-outlined">logout</span>
             </button>
           </div>
         </header>
 
-        {/* Grid danh sách bàn */}
         <TableSelectionGrid
-          tables={staffState.tables.filter(t => t.status === TableStatus.OCCUPIED)}
+          tables={occupiedTables}
           onSelect={handleSelectTable}
           selectedTableId={selectedTableId}
         />
 
-        {/* Hiển thị khi không có bàn nào đang bận */}
-        {staffState.tables.filter(t => t.status === TableStatus.OCCUPIED).length === 0 && (
+        {occupiedTables.length === 0 && (
           <div className="h-80 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-[3rem] opacity-40">
-            <span className="text-5xl mb-4">🧾</span>
+            <span className="text-5xl mb-4 italic font-black text-gray-200">EMPTY</span>
             <p className="font-black uppercase text-[10px] tracking-widest text-gray-400 italic">No active bills found</p>
           </div>
         )}
       </main>
 
-      {/* PHẦN PHẢI: CHI TIẾT HÓA ĐƠN & THANH TOÁN (SIDEBAR) */}
-      <aside className={`w-[480px] bg-white transition-all duration-500 ease-in-out transform border-l border-gray-100 shadow-2xl flex flex-col
-        ${bill ? 'translate-x-0' : 'translate-x-full'}`}
-      >
+      {/* Sidebar Chi tiết Bill */}
+      <aside className={`w-[480px] bg-white transition-all duration-500 border-l border-gray-100 shadow-2xl flex flex-col ${bill ? 'translate-x-0' : 'translate-x-full'}`}>
         {bill ? (
-          <div className="flex flex-col h-full">
-            {/* Header và Danh sách món nằm trong Sidebar này */}
-            <div className="flex-1 overflow-hidden">
-              <BillDetailSidebar
-                bill={bill}
-                loading={loading}
-                onApplyDiscount={handleApplyDiscount}
-                onCheckout={processCheckout}
-              />
-            </div>
-
-            {/* Phần Action Card cố định ở dưới cùng sidebar
-            <div className="p-8 bg-white border-t border-gray-50">
-              <PaymentActionCard
-                finalAmount={bill.finalPrice}
-                onPay={processCheckout} // Gắn hàm thanh toán MoMo/Cash
-                isProcessing={loading}
-              />
-            </div> lỗi double payment khúc này*/}
+          <div className="flex-1 overflow-hidden">
+            <BillDetailSidebar
+              bill={bill}
+              loading={loading}
+              onApplyDiscount={handleApplyDiscount}
+              onCheckout={processCheckout}
+            />
           </div>
         ) : (
-          <div className="h-full flex items-center justify-center p-12 text-center">
-            <p className="text-gray-300 font-black uppercase text-xs italic tracking-widest">
-              Select a table to view payment details
+          <div className="h-full flex items-center justify-center p-12 text-center opacity-20">
+            <p className="text-dark-gray font-black uppercase text-xs italic tracking-widest leading-loose">
+              Select a table<br />to begin checkout
             </p>
           </div>
         )}
       </aside>
 
-      {/* OVERLAY KHI ĐANG XỬ LÝ (REDIRECT MOMO/CASH) */}
+      {/* Modal gộp Bill */}
+      {showMergeModal && (
+        <MergeBillModal
+          tables={occupiedTables}
+          isProcessing={loading}
+          onClose={() => setShowMergeModal(false)}
+          onConfirm={onConfirmMerge}
+        />
+      )}
+
+      {/* Loading Overlay */}
       {loading && (
-        <div className="fixed inset-0 z-[200] bg-white/40 backdrop-blur-sm flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4 bg-white p-10 rounded-[2.5rem] shadow-2xl border border-gray-100">
-            <div className="size-12 border-4 border-burgundy border-t-transparent rounded-full animate-spin" />
-            <div className="text-center">
-              <p className="text-[10px] font-black uppercase tracking-widest text-burgundy italic">Processing</p>
-              <p className="text-[8px] font-bold text-gray-400 uppercase mt-1">Please wait a moment</p>
-            </div>
-          </div>
+        <div className="fixed inset-0 z-[300] bg-white/60 backdrop-blur-md flex items-center justify-center">
+          <div className="size-16 border-8 border-burgundy border-t-transparent rounded-full animate-spin" />
         </div>
       )}
     </div>
