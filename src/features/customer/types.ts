@@ -69,7 +69,40 @@ export interface User {
   role: 'ADMIN' | 'STAFF' | 'CUSTOMER' | 'MANAGER';
   token?: string;
 }
+// --- 7. Thực thể Bàn (Khớp với API /tables/available) ---
+export interface Table {
+    id: number;
+    tableNumber: string;
+    capacity: number;
+    status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'OUT_OF_SERVICE';
+    location: string;
+    qrCode: string;
+}
 
+// --- 8. Thực thể Reservation (Khớp với API Reservation) ---
+export interface ReservationRequest {
+    customerName: string;
+    customerPhone: string;
+    reservationTime: string; // ISO string
+    partySize: number;
+    tableId?: number;
+    notes?: string;
+}
+
+export interface ReservationWithDepositRequest extends ReservationRequest {
+    depositAmount: number;
+    orderItems: { itemId: number; quantity: number; notes?: string }[];
+}
+
+export interface ReservationResponse {
+    id: number;
+    customerName: string;
+    customerPhone: string;
+    reservationTime: string;
+    partySize: number;
+    status: 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CANCELLED' | 'NO_SHOW';
+    tableNumber?: string;
+}
 export interface BillResponse {
     id: number;
     totalPrice: number;       // BigDecimal -> number
