@@ -31,11 +31,18 @@ const CheckoutView: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem('user'); // Xóa token/user data
+      window.location.href = '/login';
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#F8F9FA] overflow-hidden font-display">
       {/* PHẦN TRÁI: DANH SÁCH BÀN CẦN THANH TOÁN */}
       <main className="flex-1 overflow-y-auto p-10">
-        <header className="mb-10 flex justify-between items-end">
+        <header className="mb-10 flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-black uppercase tracking-tighter text-burgundy italic leading-none">
               Cashier Terminal
@@ -45,9 +52,26 @@ const CheckoutView: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
-            <span className="text-[10px] font-black text-olive uppercase italic">System Active</span>
-            <div className="size-2 rounded-full bg-olive animate-pulse" />
+          <div className="flex items-center gap-4">
+            {/* Trạng thái hệ thống */}
+            <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
+              <span className="text-[10px] font-black text-olive uppercase italic">System Active</span>
+              <div className="size-2 rounded-full bg-olive animate-pulse" />
+            </div>
+
+            {/* NÚT ĐĂNG XUẤT MỚI */}
+            <button
+              onClick={handleLogout}
+              className="group flex items-center gap-3 bg-white px-5 py-3 rounded-2xl shadow-sm border border-gray-100 hover:border-burgundy hover:bg-burgundy/5 transition-all duration-300"
+            >
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-black text-dark-gray uppercase tracking-widest group-hover:text-burgundy transition-colors">Logout</span>
+                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Exit Terminal</span>
+              </div>
+              <div className="size-8 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-burgundy group-hover:text-white transition-all">
+                <span className="material-symbols-outlined text-lg">logout</span>
+              </div>
+            </button>
           </div>
         </header>
 
