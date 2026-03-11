@@ -38,6 +38,11 @@ export const useCashier = () => {
   // 3. Xử lý thanh toán
   const processCheckout = async (method: PaymentMethod) => {
     if (!bill) return;
+    setLoading(true);
+    if (method === PaymentMethod.CASH) {
+        toast.success("Payment completed!");
+        setBill(null); // Gán null để Sidebar đóng lại
+      }
     
     setLoading(true);
     try {
@@ -68,6 +73,8 @@ export const useCashier = () => {
 
   return {
     bill,
+    setBill,
+    setLoading,
     loading,
     loadBill,
     handleApplyDiscount,

@@ -5,6 +5,7 @@ import { BillDetailSidebar } from '../components/BillDetailSidebar';
 import { PaymentActionCard } from '../components/PaymentActionCard';
 import { useCashier } from '../hooks/useCashier';
 import { TableResponse, TableStatus, PaymentMethod } from '../types';
+import { CashPaymentModal } from '../components/CashPaymentModal';
 
 const CheckoutView: React.FC = () => {
   // Lấy dữ liệu bàn từ hệ thống chung
@@ -15,6 +16,8 @@ const CheckoutView: React.FC = () => {
 
   // Trạng thái bàn đang được chọn trên UI
   const [selectedTableId, setSelectedTableId] = useState<number | undefined>(undefined);
+  // Trạng thái hiển thị modal thanh toán tiền mặt
+  const [showCashModal, setShowCashModal] = useState(false);
 
   // Tự động làm mới dữ liệu bàn mỗi 5 giây
   useEffect(() => {
@@ -28,6 +31,27 @@ const CheckoutView: React.FC = () => {
     if (table.status === TableStatus.OCCUPIED && table.currentBill?.id) {
       setSelectedTableId(table.id);
       loadBill(table.currentBill.id); // Gọi API lấy chi tiết Bill
+    }
+  };
+  const handlePaymentSuccess = async (method: PaymentMethod) => {
+    // 1. Thực hiện thanh toán qua API
+    await processCheckout(method);
+    
+    // 2. Nếu là Cash (Momo sẽ redirect nên không cần xử lý ở đây)
+    if (method === PaymentMethod.CASH) {
+      setShowCashModal(false);
+      setSelectedTableId(undefined); // Reset chọn bàn -> sidebar sẽ biến mất
+      // Lưu ý: handleSelectTable sẽ loadBill, nếu muốn sidebar đóng thì bill phải null
+      // Bạn có thể cần thêm logic setBill(null) trong useCashier hoặc xử lý ở đây.
+    }
+  };
+
+  // Cập nhật lại logic chọn phương thức thanh toán
+  const handleOnPayClick = (method: PaymentMethod) => {
+    if (method === PaymentMethod.CASH) {
+      setShowCashModal(true);
+    } else {
+      processCheckout(method);
     }
   };
 
@@ -79,18 +103,9 @@ const CheckoutView: React.FC = () => {
                 bill={bill}
                 loading={loading}
                 onApplyDiscount={handleApplyDiscount}
-                onCheckout={processCheckout}
+                onCheckout={handleOnPayClick}
               />
             </div>
-
-            {/* Phần Action Card cố định ở dưới cùng sidebar
-            <div className="p-8 bg-white border-t border-gray-50">
-              <PaymentActionCard
-                finalAmount={bill.finalPrice}
-                onPay={processCheckout} // Gắn hàm thanh toán MoMo/Cash
-                isProcessing={loading}
-              />
-            </div> lỗi double payment khúc này*/}
           </div>
         ) : (
           <div className="h-full flex items-center justify-center p-12 text-center">
@@ -100,7 +115,14 @@ const CheckoutView: React.FC = () => {
           </div>
         )}
       </aside>
-
+      {/* MODAL TIỀN MẶT */}
+        {showCashModal && bill && (
+          <CashPaymentModal 
+            totalAmount={bill.finalPrice}
+            onClose={() => setShowCashModal(false)}
+            onConfirm={() => handlePaymentSuccess(PaymentMethod.CASH)}
+          />
+        )}
       {/* OVERLAY KHI ĐANG XỬ LÝ (REDIRECT MOMO/CASH) */}
       {loading && (
         <div className="fixed inset-0 z-[200] bg-white/40 backdrop-blur-sm flex items-center justify-center">

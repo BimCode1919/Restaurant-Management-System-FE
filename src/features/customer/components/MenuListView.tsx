@@ -10,7 +10,7 @@ interface MenuListViewProps {
 const MenuListView: React.FC<MenuListViewProps> = ({ items, onAdd, onView }) => (
   <div className="space-y-6 animate-in fade-in duration-500">
     <div className="flex flex-col gap-1">
-      <h2 className="text-2xl font-black text-burgundy uppercase tracking-tighter">Thực đơn hôm nay</h2>
+      <h2 className="text-2xl font-black text-burgundy uppercase tracking-tighter">Our Menu Today</h2>
       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Today's Special Selection</p>
     </div>
     
@@ -37,7 +37,7 @@ const MenuListView: React.FC<MenuListViewProps> = ({ items, onAdd, onView }) => 
               onClick={() => onAdd(item)}
               className="w-full h-9 bg-gray-100 text-gray-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-burgundy hover:text-white transition-colors"
             >
-              Thêm vào giỏ
+              Add to Cart
             </button>
           </div>
         </div>

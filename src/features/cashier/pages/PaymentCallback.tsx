@@ -26,7 +26,7 @@ const PaymentCallback: React.FC = () => {
 
                 reservationApi.createReservationWithDeposit(reservationRequest)
                     .then((response) => {
-                        toast.success(`Đặt bàn thành công! Mã đơn: ${response.data.id}`);
+                        toast.success(`Reservation successfully, Reservation ID: ${response.data.id}`);
                         localStorage.removeItem('pending_reservation'); // Xóa sau khi dùng xong
                         
                         // Chuyển sang màn hình thành công của Customer
@@ -34,7 +34,7 @@ const PaymentCallback: React.FC = () => {
                     })
                     .catch(err => {
                         console.error("Reservation API Error:", err);
-                        toast.error("Thanh toán thành công nhưng lỗi tạo đơn đặt bàn. Vui lòng liên hệ nhà hàng!");
+                        toast.error("Payment completed successfully but failed to create reservation. Please contact the restaurant.");
                     });
             } else {
                 // --- LUỒNG XỬ LÝ THANH TOÁN TẠI QUẦY (CASHIER) ---
@@ -54,18 +54,18 @@ const PaymentCallback: React.FC = () => {
                 {status === 'processing' && (
                     <div className="animate-pulse flex flex-col items-center">
                         <div className="size-20 border-8 border-burgundy/10 border-t-burgundy rounded-full animate-spin mb-4" />
-                        <p className="font-black uppercase text-sm italic tracking-widest">Đang xác thực giao dịch...</p>
+                        <p className="font-black uppercase text-sm italic tracking-widest">Processing transaction...</p>
                     </div>
                 )}
 
                 {status === 'success' && (
                     <div className="bg-olive/5 border border-olive/20 p-10 rounded-[3rem] animate-in zoom-in-95 duration-500">
                         <div className="size-20 bg-olive text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-olive/20">✓</div>
-                        <h2 className="text-3xl font-black italic text-olive uppercase tracking-tighter">Thanh toán thành công</h2>
+                        <h2 className="text-3xl font-black italic text-olive uppercase tracking-tighter">Payment Successful</h2>
                         <p className="text-gray-500 font-bold text-sm mt-4 uppercase leading-relaxed">
                             {localStorage.getItem('pending_reservation') 
-                                ? 'Yêu cầu đặt bàn của bạn đang được khởi tạo...' 
-                                : 'Hóa đơn đã được thanh toán. Bạn có thể dọn bàn.'}
+                                ? 'Your reservation request is being processed...' 
+                                : 'The bill has been paid. You can now clear the table.'}
                         </p>
                     </div>
                 )}
@@ -73,7 +73,7 @@ const PaymentCallback: React.FC = () => {
                 {status === 'failed' && (
                     <div className="bg-burgundy/5 border border-burgundy/20 p-10 rounded-[3rem]">
                         <div className="size-20 bg-burgundy text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-burgundy/20">✕</div>
-                        <h2 className="text-3xl font-black italic text-burgundy uppercase tracking-tighter">Thanh toán thất bại</h2>
+                        <h2 className="text-3xl font-black italic text-burgundy uppercase tracking-tighter">Payment Failed</h2>
                         <p className="text-gray-500 font-bold text-sm mt-4 uppercase tracking-wide">{searchParams.get('message')}</p>
                         <button
                             onClick={() => {
@@ -87,7 +87,7 @@ const PaymentCallback: React.FC = () => {
                             }}
                             className="mt-8 bg-burgundy text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-transform"
                         >
-                            Thử lại
+                            Try Again
                         </button>
                     </div>
                 )}

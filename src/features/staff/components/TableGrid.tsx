@@ -78,7 +78,7 @@ export const TableGrid: React.FC<TableGridProps> = ({ tables, onSelectTable, onM
             {/* Info Footer */}
             <div className="flex flex-col items-center gap-1">
               <span className="text-xs font-black text-dark-gray uppercase tracking-[0.2em]">
-                {isOccupied ? `Total: ${bill?.finalPrice?.toLocaleString()}đ` :
+                {isOccupied ? `Total: ${bill?.finalPrice?.toLocaleString()} VND` :
                   isReserved ? 'Reserved for Guest' : 'Available'}
               </span>
               <p className="text-[10px] text-gray-400 font-bold uppercase">

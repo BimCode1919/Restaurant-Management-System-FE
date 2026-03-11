@@ -28,7 +28,7 @@ const OrderReviewModal: React.FC<OrderReviewModalProps> = ({
         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden" />
 
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-black uppercase italic text-dark-gray">Giỏ hàng</h2>
+          <h2 className="text-2xl font-black uppercase italic text-dark-gray">Cart</h2>
           <button onClick={onClose} className="size-10 bg-gray-50 rounded-full flex items-center justify-center">
             <span className="material-symbols-outlined text-gray-400">close</span>
           </button>
@@ -59,20 +59,20 @@ const OrderReviewModal: React.FC<OrderReviewModalProps> = ({
           ))}
           
           {cart.length === 0 && (
-            <p className="text-center text-gray-400 py-10 font-bold uppercase text-[10px] tracking-widest">Giỏ hàng trống</p>
+            <p className="text-center text-gray-400 py-10 font-bold uppercase text-[10px] tracking-widest">Cart is empty</p>
           )}
         </div>
 
         <div className="space-y-4">
           <div className="flex justify-between items-end px-2">
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tổng cộng</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total</p>
               <p className="text-2xl font-black text-dark-gray">
-                {new Intl.NumberFormat('vi-VN').format(total)}đ
+                {new Intl.NumberFormat('vi-VN').format(total)}VNĐ
               </p>
             </div>
             <p className="text-[10px] font-bold text-burgundy bg-burgundy/10 px-3 py-1 rounded-full uppercase">
-              {cart.length} món
+              {cart.length} dish{cart.length > 1 ? 'es' : ''}
             </p>
           </div>
 
@@ -81,7 +81,7 @@ const OrderReviewModal: React.FC<OrderReviewModalProps> = ({
             onClick={onSubmit}
             className="w-full bg-burgundy disabled:bg-gray-300 text-white py-5 rounded-[1.5rem] font-black uppercase tracking-[0.2em] shadow-xl shadow-burgundy/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
           >
-            Xác nhận đặt món
+            Confirm Order
             <span className="material-symbols-outlined text-sm">send</span>
           </button>
         </div>
