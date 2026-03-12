@@ -3,7 +3,8 @@ import axiosClient from '../../../api/axiosClient';
 import {
   CreateOrderRequest, ApiResponse, CreateBillRequest,
   TableResponse, BillResponse, ItemResponse, OrderResponse,
-  ItemStatus, OrderDetailResponse
+  ItemStatus, OrderDetailResponse,
+  ReservationResponse
 } from '../types';
 
 export const staffApi = {
@@ -30,4 +31,19 @@ export const staffApi = {
 
   massUpdateOrderStatus: (orderId: number) =>
     axiosClient.patch(`/orders/MassUpdateStatus/${orderId}`) as Promise<ApiResponse<OrderDetailResponse[]>>,
+
+  getReservationDetail: (id: number) =>
+    axiosClient.get(`/reservations/${id}`) as Promise<ApiResponse<ReservationResponse>>,
+
+  confirmReservation: (id: number) =>
+    axiosClient.put(`/reservations/${id}/confirm`) as Promise<ApiResponse<ReservationResponse>>,
+
+  checkInReservation: (id: number, billId: number) =>
+    axiosClient.put(`/reservations/${id}/check-in?billId=${billId}`) as Promise<ApiResponse<ReservationResponse>>,
+
+  cancelReservation: (id: number, reason?: string) =>
+    axiosClient.put(`/reservations/${id}/cancel${reason ? `?reason=${reason}` : ''}`) as Promise<ApiResponse<ReservationResponse>>,
+
+  markNoShow: (id: number, reason?: string) =>
+    axiosClient.put(`/reservations/${id}/no-show${reason ? `?reason=${reason}` : ''}`) as Promise<ApiResponse<ReservationResponse>>,
 };
