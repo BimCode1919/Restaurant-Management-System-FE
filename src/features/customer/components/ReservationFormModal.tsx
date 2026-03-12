@@ -6,14 +6,18 @@ interface Props {
   onClose: () => void;
   onSubmit: (data: Omit<ReservationRequest, 'tableId'>) => void;
   partySize: number;
+  depositAmount?: number; // Thêm prop depositAmount nếu cần hiển thị trong form
+
 }
 
-const ReservationFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, partySize }) => {
+const ReservationFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, partySize, depositAmount, }) => {
   const [formData, setFormData] = useState({
     customerName: '',
     customerPhone: '',
+    customerEmail: '',
     reservationTime: '',
-    notes: ''
+    notes: '',
+    depositAmount: depositAmount || 0 // Khởi tạo depositAmount trong formData nếu có prop truyền vào
   });
 
   if (!isOpen) return null;
@@ -43,7 +47,16 @@ const ReservationFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, part
               onChange={e => setFormData({...formData, customerName: e.target.value})}
             />
           </div>
-
+          <div>
+            <label className="block text-[10px] font-black uppercase text-gray-400 ml-4 mb-1">Email</label>
+            <input 
+              required
+              type="email"
+              className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-burgundy/20"
+              placeholder="email@gmail.com"
+              onChange={e => setFormData({...formData, customerEmail: e.target.value})}
+            />
+          </div>
           <div>
             <label className="block text-[10px] font-black uppercase text-gray-400 ml-4 mb-1">Phone Number</label>
             <input 

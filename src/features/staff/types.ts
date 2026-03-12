@@ -165,7 +165,8 @@ export interface TableActionModalProps {
     onClose: () => void;
     onUpdateOrder: () => void;
     onCancelItem: (orderDetailId: number) => void;
-    onMassUpdate: (orderId: number) => void; // Thêm function này
+    onMassUpdate: (orderId: number) => void; 
+    onServeItem: (orderDetailId: number) => void;
 }
 
 export enum ReservationStatus {

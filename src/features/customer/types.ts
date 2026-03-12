@@ -10,7 +10,7 @@ export interface MenuItem {
   name: string;
   price: number;
   description: string;
-  imageUrl: string;
+  imageURL: string;
   categoryName: string;
   categoryId: number;
   unit: string;

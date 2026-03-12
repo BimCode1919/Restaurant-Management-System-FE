@@ -9,8 +9,8 @@ export const useKitchenOrders = (store: any) => {
     try {
       // Gọi cả 2 cùng lúc cho nhanh má ơi
       const [resPrep, resReady]: any = await Promise.all([
-        kitchenApi.getPreparingOrders(),
-        kitchenApi.getReadyOrders()
+        kitchenApi.getOrdersByStatus("PREPARING"),
+        kitchenApi.getOrdersByStatus("READY")
       ]);
 
       // Gán dữ liệu (res.data là mảng từ API trả về)

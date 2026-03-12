@@ -1,4 +1,3 @@
-// src/features/staff/services/staffApi.ts
 import axiosClient from '../../../api/axiosClient';
 import {
   CreateOrderRequest, ApiResponse, CreateBillRequest,
@@ -46,4 +45,8 @@ export const staffApi = {
 
   markNoShow: (id: number, reason?: string) =>
     axiosClient.put(`/reservations/${id}/no-show${reason ? `?reason=${reason}` : ''}`) as Promise<ApiResponse<ReservationResponse>>,
+  serveItem: (orderDetailId: number) =>
+    axiosClient.patch(`/order-details/${orderDetailId}/status`, JSON.stringify("SERVED"), {
+      headers: { 'Content-Type': 'application/json' }
+    }) as Promise<ApiResponse<any>>,
 };
