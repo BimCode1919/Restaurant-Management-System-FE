@@ -10,6 +10,8 @@ import PaymentCallback from '../features/cashier/pages/PaymentCallback';
 import GuestLanding from '../features/auth/pages/GuestLanding';
 import { getGuestInfo } from '../features/customer/jwtUtils';
 import KitchenPage from '../features/kitchen/pages/KitchenPage';
+import WelcomePage from '../features/customer/pages/WelcomePage';
+import ReservationFlow from '../features/customer/pages/ReservationFlow';
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
 const Unauthorized = () => <div>Where ur permission?</div>;
 
@@ -50,6 +52,11 @@ const AppRouter = () => {
         }}
       />
       <Routes>
+        {/* welcome page */}
+        <Route path="/" element={<WelcomePage />} />
+
+        {/* Reservation */}
+        <Route path="/reservation-flow" element={<ReservationFlow />} />
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/customer" element={<CustomerPage store={mockStore} />} />
@@ -81,7 +88,7 @@ const AppRouter = () => {
         </Route>
 
         {/* Default Route */}
-        <Route path="/" element={<Navigate to="/menu" replace />} />
+        <Route path="/" element={<Navigate to="/WelcomePage" replace />} />
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </BrowserRouter>

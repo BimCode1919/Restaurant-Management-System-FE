@@ -55,7 +55,7 @@ const KitchenSidebar: React.FC<Props> = ({ activeTab, setActiveTab, logout }) =>
         className="flex items-center gap-4 px-4 py-4 rounded-2xl text-gray-500 hover:bg-red-500/10 hover:text-red-400 transition-all group"
       >
         <span className="material-symbols-outlined group-hover:rotate-180 transition-transform duration-300">logout</span>
-        <span className="font-bold text-sm">Đăng xuất</span>
+        <span className="font-bold text-sm">Log Out</span>
       </button>
     </aside>
   );
