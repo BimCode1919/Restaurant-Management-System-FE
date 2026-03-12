@@ -5,9 +5,10 @@ import { authApi } from '../services/authApi';
 
 interface Props {
     onSelect: (table: Table) => void;
+    minCapacity?: number;
 }
 
-const TableView: React.FC<Props> = ({ onSelect }) => {
+const TableView: React.FC<Props> = ({ onSelect, minCapacity }) => {
     const [tables, setTables] = useState<Table[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -16,7 +17,13 @@ useEffect(() => {
         try {
             setLoading(true);
             const res = await reservationApi.getAvailableTables();
-            setTables(res.data || []);
+            let filteredTables = res.data || [];
+
+            if (minCapacity !== undefined) {
+                filteredTables = filteredTables.filter(table => table.capacity >= minCapacity);
+            }
+
+            setTables(filteredTables);
         } catch (error: any) {
             // Nếu lỗi 401 (chưa có token)
             if (error.response?.status === 401) {

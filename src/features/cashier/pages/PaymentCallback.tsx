@@ -26,15 +26,15 @@ const PaymentCallback: React.FC = () => {
 
                 reservationApi.createReservationWithDeposit(reservationRequest)
                     .then((response) => {
-                        toast.success(`Reservation Successful! ID: ${response.data.id}`);
-                        localStorage.removeItem('pending_reservation'); // Clear after use
-
-                        // Navigate to Customer success screen
+                        toast.success(`Reservation successfully, Reservation ID: ${response.data.id}`);
+                        localStorage.removeItem('pending_reservation'); // Xóa sau khi dùng xong
+                        
+                        // Chuyển sang màn hình thành công của Customer
                         setTimeout(() => navigate('/reservation/success', { state: { reservation: response.data } }), 2000);
                     })
                     .catch(err => {
                         console.error("Reservation API Error:", err);
-                        toast.error("Payment successful but failed to create reservation. Please contact the restaurant!");
+                        toast.error("Payment completed successfully but failed to create reservation. Please contact the restaurant.");
                     });
             } else {
                 // --- CASHIER TERMINAL HANDLING ---
@@ -54,7 +54,7 @@ const PaymentCallback: React.FC = () => {
                 {status === 'processing' && (
                     <div className="animate-pulse flex flex-col items-center">
                         <div className="size-20 border-8 border-burgundy/10 border-t-burgundy rounded-full animate-spin mb-4" />
-                        <p className="font-black uppercase text-sm italic tracking-widest">Verifying transaction...</p>
+                        <p className="font-black uppercase text-sm italic tracking-widest">Processing transaction...</p>
                     </div>
                 )}
 
@@ -63,9 +63,9 @@ const PaymentCallback: React.FC = () => {
                         <div className="size-20 bg-olive text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-olive/20">✓</div>
                         <h2 className="text-3xl font-black italic text-olive uppercase tracking-tighter">Payment Successful</h2>
                         <p className="text-gray-500 font-bold text-sm mt-4 uppercase leading-relaxed">
-                            {localStorage.getItem('pending_reservation')
-                                ? 'Your reservation request is being initialized...'
-                                : 'The invoice has been paid. You can now clear the table.'}
+                            {localStorage.getItem('pending_reservation') 
+                                ? 'Your reservation request is being processed...' 
+                                : 'The bill has been paid. You can now clear the table.'}
                         </p>
                     </div>
                 )}
@@ -87,7 +87,7 @@ const PaymentCallback: React.FC = () => {
                             }}
                             className="mt-8 bg-burgundy text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-transform"
                         >
-                            Retry
+                            Try Again
                         </button>
                     </div>
                 )}

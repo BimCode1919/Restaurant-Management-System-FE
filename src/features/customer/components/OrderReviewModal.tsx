@@ -59,24 +59,20 @@ const OrderReviewModal: React.FC<OrderReviewModalProps> = ({
           ))}
 
           {cart.length === 0 && (
-            <p className="text-center text-gray-400 py-10 font-bold uppercase text-[10px] tracking-widest">
-              Cart is empty
-            </p>
+            <p className="text-center text-gray-400 py-10 font-bold uppercase text-[10px] tracking-widest">Cart is empty</p>
           )}
         </div>
 
         <div className="space-y-4">
           <div className="flex justify-between items-end px-2">
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                Total
-              </p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total</p>
               <p className="text-2xl font-black text-dark-gray">
-                {new Intl.NumberFormat('vi-VN').format(total)}đ
+                {new Intl.NumberFormat('vi-VN').format(total)}VNĐ
               </p>
             </div>
             <p className="text-[10px] font-bold text-burgundy bg-burgundy/10 px-3 py-1 rounded-full uppercase">
-              {cart.length} items
+              {cart.length} dish{cart.length > 1 ? 'es' : ''}
             </p>
           </div>
 

@@ -17,7 +17,7 @@ export const PaymentActionCard: React.FC<PaymentActionCardProps> = ({ finalAmoun
                     className="group flex-1 bg-dark-gray hover:bg-black text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all flex flex-col items-center gap-0.5 disabled:opacity-50"
                 >
                     <span className="group-hover:scale-110 transition-transform">Cash</span>
-                    <span className="text-[7px] font-normal opacity-40 lowercase tracking-normal italic">tiền mặt</span>
+                    <span className="text-[7px] font-normal opacity-40 lowercase tracking-normal italic">It Just Cash</span>
                 </button>
 
                 <button
@@ -26,7 +26,7 @@ export const PaymentActionCard: React.FC<PaymentActionCardProps> = ({ finalAmoun
                     className="group flex-1 bg-[#A50064] hover:bg-[#850050] text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all flex flex-col items-center gap-0.5 disabled:opacity-50 shadow-lg shadow-[#A50064]/20"
                 >
                     <span className="group-hover:scale-110 transition-transform">MoMo</span>
-                    <span className="text-[7px] font-normal opacity-60 lowercase tracking-normal italic">ví điện tử</span>
+                    <span className="text-[7px] font-normal opacity-60 lowercase tracking-normal italic">Online Banking</span>
                 </button>
             </div>
         </div>

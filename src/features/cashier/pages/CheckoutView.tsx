@@ -4,13 +4,16 @@ import { TableSelectionGrid } from '../components/TableSelectionGrid';
 import { BillDetailSidebar } from '../components/BillDetailSidebar';
 import { MergeBillModal } from '../components/MergeBillModal'; // Component mới
 import { useCashier } from '../hooks/useCashier';
-import { TableResponse, TableStatus } from '../types';
+import { TableResponse, TableStatus, PaymentMethod } from '../types';
+import { CashPaymentModal } from '../components/CashPaymentModal';
 
 const CheckoutView: React.FC = () => {
   const { state: staffState, actions: staffActions } = useStaffOrder();
   const { bill, loading, loadBill, handleApplyDiscount, processCheckout, handleMergeBills } = useCashier();
 
   const [selectedTableId, setSelectedTableId] = useState<number | undefined>(undefined);
+  // Trạng thái hiển thị modal thanh toán tiền mặt
+  const [showCashModal, setShowCashModal] = useState(false);
   const [showMergeModal, setShowMergeModal] = useState(false);
 
   useEffect(() => {
@@ -33,6 +36,27 @@ const CheckoutView: React.FC = () => {
     if (newBill) {
       setShowMergeModal(false);
       staffActions.refreshData(); // Refresh để cập nhật lại danh sách bàn
+    }
+  };
+  const handlePaymentSuccess = async (method: PaymentMethod) => {
+    // 1. Thực hiện thanh toán qua API
+    await processCheckout(method);
+    
+    // 2. Nếu là Cash (Momo sẽ redirect nên không cần xử lý ở đây)
+    if (method === PaymentMethod.CASH) {
+      setShowCashModal(false);
+      setSelectedTableId(undefined); // Reset chọn bàn -> sidebar sẽ biến mất
+      // Lưu ý: handleSelectTable sẽ loadBill, nếu muốn sidebar đóng thì bill phải null
+      // Bạn có thể cần thêm logic setBill(null) trong useCashier hoặc xử lý ở đây.
+    }
+  };
+
+  // Cập nhật lại logic chọn phương thức thanh toán
+  const handleOnPayClick = (method: PaymentMethod) => {
+    if (method === PaymentMethod.CASH) {
+      setShowCashModal(true);
+    } else {
+      processCheckout(method);
     }
   };
 
@@ -83,13 +107,16 @@ const CheckoutView: React.FC = () => {
       {/* Sidebar Chi tiết Bill */}
       <aside className={`w-[480px] bg-white transition-all duration-500 border-l border-gray-100 shadow-2xl flex flex-col ${bill ? 'translate-x-0' : 'translate-x-full'}`}>
         {bill ? (
-          <div className="flex-1 overflow-hidden">
-            <BillDetailSidebar
-              bill={bill}
-              loading={loading}
-              onApplyDiscount={handleApplyDiscount}
-              onCheckout={processCheckout}
-            />
+          <div className="flex flex-col h-full">
+            {/* Header và Danh sách món nằm trong Sidebar này */}
+            <div className="flex-1 overflow-hidden">
+              <BillDetailSidebar
+                bill={bill}
+                loading={loading}
+                onApplyDiscount={handleApplyDiscount}
+                onCheckout={handleOnPayClick}
+              />
+            </div>
           </div>
         ) : (
           <div className="h-full flex items-center justify-center p-12 text-center opacity-20">
@@ -99,6 +126,15 @@ const CheckoutView: React.FC = () => {
           </div>
         )}
       </aside>
+      {/* MODAL TIỀN MẶT */}
+        {showCashModal && bill && (
+          <CashPaymentModal 
+            totalAmount={bill.finalPrice}
+            onClose={() => setShowCashModal(false)}
+            onConfirm={() => handlePaymentSuccess(PaymentMethod.CASH)}
+          />
+        )}
+      {/* OVERLAY KHI ĐANG XỬ LÝ (REDIRECT MOMO/CASH) */}
 
       {/* Modal gộp Bill */}
       {showMergeModal && (

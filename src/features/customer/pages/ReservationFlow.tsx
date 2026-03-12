@@ -15,6 +15,7 @@ const ReservationFlow: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isLargeGroup = location.state?.isLargeGroup || false;
+  const [createdBillId, setCreatedBillId] = useState<number | null>(null); // State để lưu Bill ID từ DB
 
   // States
   const [step, setStep] = useState<'SELECT_TABLE' | 'SELECT_MENU' | 'DONE'>('SELECT_TABLE');
@@ -51,7 +52,7 @@ const ReservationFlow: React.FC = () => {
     
     if (!isLargeGroup) {
       try {
-        const finalData = { ...customerData, tableId: selectedTable?.id };
+        const finalData = { ...customerData, requestedTableIds : [selectedTable?.id] };// lỗi ở đây, API cần mảng tableId
         await reservationApi.createReservation(finalData as ReservationRequest);
         setStep('DONE');
       } catch (error) {
@@ -63,46 +64,60 @@ const ReservationFlow: React.FC = () => {
     }
   };
 
-  const handlePlaceOrderWithDeposit = async () => {
+const handlePlaceOrderWithDeposit = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
-
+    const now = new Date();
+        // Tạo một thời điểm trong tương lai (ví dụ: 2 giờ sau) để test chắc chắn không lỗi
+        const futureDate = new Date(now.getTime() + 2 * 60 * 60 * 1000); 
+        
+        const formattedDate = futureDate.toISOString()
+            .replace('T', ' ')
+            .split('.')[0];
     try {
-      // 1. Chuẩn bị dữ liệu lưu tạm (Khớp với ReservationWithDepositRequest)
-      const reservationData = {
-        ...customerInfo,
-        tableId: selectedTable?.id,
-        depositAmount: 200000,
-        orderItems: cart.map(item => ({ 
-          itemId: item.id, // Đổi từ menuItemId thành itemId cho khớp types.ts
-          quantity: item.quantity,
-          notes: item.notes || ''
-        }))
-      };
-      
-      localStorage.setItem('pending_reservation', JSON.stringify(reservationData));
 
-      // 2. Gọi API tạo Payment
-      const response = await cashierApi.createPayment({
-        billId: 0, 
-        paymentMethod: PaymentMethod.MOMO,
-        returnUrl: `${window.location.origin}/payment-callback` 
-      });
+        // BƯỚC 1: Tạo Reservation để lấy Bill ID (Gọi sang Reservation API)
+        const reservationData = {
+            ...customerInfo,
+            requestedTableIds: selectedTable?.id,
+            depositAmount: 200000,
+            orderItems: cart.map(item => ({ 
+                itemId: item.id, 
+                quantity: item.quantity,
+                notes: item.notes || ''
+            }))
+        };
 
-      // 3. Điều hướng
-      if (response.paymentUrl) {
-        window.location.href = response.paymentUrl;
-      } else {
-        throw new Error("Can not get payment URL.");
-      }
-    } catch (error) {
-      console.error("Deposit Error:", error);
-      toast.error("Cannot initialize deposit payment.");
+        // API này sẽ lưu vào DB và trả về cho bạn một Object có chứa ID hóa đơn
+        const res = await reservationApi.createReservationWithDeposit(reservationData);
+        
+        // Lấy ID thực tế từ Database (Ví dụ: 15, 16...)
+        const realBillId = res.data?.id; 
+
+        if (!realBillId) {
+            toast.error("Cannot retrieve bill ID. Please contact the restaurant.");
+            return;
+        }
+
+        // BƯỚC 2: Gọi API Thanh toán với Bill ID thực (Gọi sang Payment API)
+        const paymentResponse = await cashierApi.createPayment({
+            billId: realBillId, // ĐÃ CÓ ID THẬT, KHÔNG CÒN LÀ 0
+            paymentMethod: PaymentMethod.MOMO,
+            returnUrl: `${window.location.origin}/payment-callback` 
+        });
+
+        // BƯỚC 3: Chuyển hướng sang MoMo
+        if (paymentResponse.paymentUrl) {
+            window.location.href = paymentResponse.paymentUrl;
+        }
+
+    } catch (error: any) {
+        console.error("Error: ", error.response?.data);
+        toast.error(error.response?.data?.message || "Cannot process payment. Please try again.");
     } finally {
-      setIsProcessing(false);
+        setIsProcessing(false);
     }
-  };
-
+};
   // UI cho màn hình DONE (Đã tối ưu hóa)
   if (step === 'DONE') {
     return (
@@ -134,12 +149,12 @@ const ReservationFlow: React.FC = () => {
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <h1 className="font-black uppercase italic text-dark-gray tracking-tight">
-          {isLargeGroup ? 'Đặt Tiệc Lớn' : 'Đặt Bàn Nhỏ'}
+          {isLargeGroup ? 'Party Reservation' : 'Table Reservation'}
         </h1>
       </header>
 
       <main className="p-6 max-w-2xl mx-auto">
-        {step === 'SELECT_TABLE' && <TableView onSelect={handleTableSelect} />}
+        {step === 'SELECT_TABLE' && <TableView onSelect={handleTableSelect} minCapacity={5} />}
         {step === 'SELECT_MENU' && (
           <MenuListView 
             items={menuItems} 

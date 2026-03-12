@@ -120,7 +120,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = (props) => {
                     <div className="size-16 rounded-xl bg-cover shrink-0 bg-gray-100" style={{ backgroundImage: `url(${item.imageUrl})` }}></div>
                     <div className="flex-1">
                       <p className="font-bold text-dark-gray">{item.name}</p>
-                      <p className="text-burgundy font-black text-sm">${item.price}</p>
+                      <p className="text-burgundy font-black text-sm">{item.price} VND</p>
                     </div>
                     <div className="size-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-burgundy group-hover:text-white transition-colors">
                       <span className="material-symbols-outlined">add</span>
@@ -154,7 +154,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = (props) => {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <p className="font-black text-dark-gray text-sm leading-tight">{item.name}</p>
-                          <p className="text-burgundy font-bold text-xs">${item.price}</p>
+                          <p className="text-burgundy font-bold text-xs">{item.price} VND</p>
                         </div>
                         <button
                           onClick={() => onRemoveFromCart(item.id)}
@@ -180,7 +180,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = (props) => {
 
                         {/* Tổng tiền món đó */}
                         <p className="font-black text-dark-gray text-sm">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          {(item.price * item.quantity).toFixed(2)} VND
                         </p>
                       </div>
 
@@ -205,7 +205,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = (props) => {
                     <p className="text-[10px] text-gray-400 font-bold">Tax included</p>
                   </div>
                   <p className="text-4xl font-black text-burgundy tracking-tighter">
-                    ${cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toFixed(2)}
+                    {cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toFixed(2)} VND
                   </p>
                 </div>
                 <button
