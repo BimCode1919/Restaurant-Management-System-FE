@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import { cashierApi } from '../services/cashierApi';
-import { BillResponse, PaymentMethod, PaymentStatus } from '../types';
+import { BillResponse, PaymentMethod, MergeBillRequest } from '../types';
 import { toast } from 'react-hot-toast';
 
 export const useCashier = () => {
   const [bill, setBill] = useState<BillResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // 1. Tải dữ liệu hóa đơn
+  // 1. Tải dữ liệu hóa đơn (Giữ nguyên)
   const loadBill = useCallback(async (billId: number) => {
     setLoading(true);
     try {
@@ -20,7 +20,7 @@ export const useCashier = () => {
     }
   }, []);
 
-  // 2. Áp dụng mã giảm giá
+  // 2. Áp dụng mã giảm giá (Giữ nguyên)
   const handleApplyDiscount = async () => {
     if (!bill) return;
     setLoading(true);
@@ -35,7 +35,7 @@ export const useCashier = () => {
     }
   };
 
-  // 3. Xử lý thanh toán
+  // 3. Xử lý thanh toán (Giữ nguyên)
   const processCheckout = async (method: PaymentMethod) => {
     if (!bill) return;
     setLoading(true);
@@ -49,23 +49,44 @@ export const useCashier = () => {
       const request = {
         billId: bill.id,
         paymentMethod: method,
-        // URL để MoMo quay lại sau khi thanh toán xong
-        returnUrl: `${window.location.origin}/cashier/payment-callback` 
+        returnUrl: `${window.location.origin}/cashier/payment-callback`
       };
-
       const payment = await cashierApi.createPayment(request);
-
       if (method === PaymentMethod.CASH) {
         toast.success("Payment completed with Cash!");
-        // Cập nhật local state hoặc redirect
         setBill(prev => prev ? { ...prev, status: 'PAID' as any } : null);
       } else if (method === PaymentMethod.MOMO && payment.paymentUrl) {
         toast.loading("Redirecting to MoMo...");
-        // Chuyển hướng sang trang thanh toán của MoMo
         window.location.href = payment.paymentUrl;
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Payment failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 4. XỬ LÝ GỘP BILL
+   * Nhận vào mảng billIds để tiến hành gộp
+   */
+  const handleMergeBills = async (billIds: number[]) => {
+    if (billIds.length < 2) {
+      toast.error("Select at least 2 tables to merge");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const request: MergeBillRequest = { billIds };
+      const res = await cashierApi.mergeBills(request);
+
+      // Sau khi gộp thành công, cập nhật bill đang hiển thị là Bill mới gộp
+      setBill(res.data);
+      toast.success("Bills merged successfully!");
+      return res.data; // Trả về data để UI có thể xử lý thêm nếu cần
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Merge failed");
     } finally {
       setLoading(false);
     }
@@ -78,6 +99,7 @@ export const useCashier = () => {
     loading,
     loadBill,
     handleApplyDiscount,
-    processCheckout
+    processCheckout,
+    handleMergeBills // Export hàm mới
   };
 };

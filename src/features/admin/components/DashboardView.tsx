@@ -46,64 +46,78 @@ const DashboardView: React.FC = () => {
     loadDashboard();
   }, []);
 
-  const loadDashboard = async () => {
-    try {
+const loadDashboard = async () => {
+  try {
+    // Gọi tất cả API cùng lúc, lỗi 1 cái cũng không sao
+    const [billsRes, ordersRes, tablesRes, batchesRes] = await Promise.allSettled([
+      adminApi.getBills(),
+      adminApi.getOrders(),
+      adminApi.getTables(),
+      adminApi.getExpiringBatches()
+    ]);
 
-      const billsRes = await adminApi.getBills();
-      const ordersRes = await adminApi.getOrders();
-      const tablesRes = await adminApi.getTables();
-      const batchesRes = await adminApi.getExpiringBatches();
+    // Hàm lấy dữ liệu từ mảng data của Backend (dựa trên ảnh Swagger bạn gửi)
+    const getArrayData = (res: any) => {
+      if (res.status === 'fulfilled' && res.value?.data) {
+        return res.value.data; // Vì adminApi của bạn đã trả về res.data (Object bọc ngoài)
+      }
+      return [];
+    };
 
-      const bills = billsRes.data.data || [];
-      const orders = ordersRes.data.data || [];
-      const tables = tablesRes.data.data || [];
-      const batches = batchesRes.data.data || [];
+    const bills = getArrayData(billsRes);
+    const orders = getArrayData(ordersRes);
+    const tables = getArrayData(tablesRes);
+    const batches = getArrayData(batchesRes);
 
-      const today = new Date().toISOString().slice(0,10);
+    // Lấy ngày hiện tại khớp với format "2026-03-09" trong DB của bạn
+    const today = new Date().toISOString().slice(0, 10);
 
-      const revenueToday = bills
-        .filter((b:any)=>b.createdAt?.startsWith(today))
-        .reduce((sum:number,b:any)=>sum+b.totalAmount,0);
+    // 1. Tính Doanh thu (Sử dụng totalPrice theo Swagger image_2fc85e.png)
+    const revenueToday = bills
+      .filter((b: any) => b.createdAt?.startsWith(today))
+      .reduce((sum: number, b: any) => sum + (Number(b.totalPrice) || 0), 0);
 
-      const ordersToday = orders.filter((o:any)=>
-        o.createdAt?.startsWith(today)
-      ).length;
+    // 2. Tính số Đơn hàng hôm nay
+    const ordersToday = orders.filter((o: any) => 
+      o.createdAt?.startsWith(today)
+    ).length;
 
-      const activeTables = tables.filter(
-        (t:any)=>t.status==="OCCUPIED"
-      ).length;
+    // 3. Tính bàn đang có khách (image_2fc573.png)
+    const activeTables = tables.filter(
+      (t: any) => t.status === "OCCUPIED"
+    ).length;
 
-      const lowStock = batches.length;
+    setStats({
+      revenueToday,
+      ordersToday,
+      activeTables,
+      lowStock: batches.length
+    });
 
-      setStats({
-        revenueToday,
-        ordersToday,
-        activeTables,
-        lowStock
-      });
-
-      // chart
-      const chart = bills.slice(-7).map((b:any)=>({
-        name: b.createdAt?.slice(5,10),
-        revenue: b.totalAmount
+    // 4. Cập nhật biểu đồ Sales Overview
+    if (bills.length > 0) {
+      const chart = bills.slice(-7).map((b: any) => ({
+        name: b.createdAt?.slice(5, 10),
+        revenue: b.totalPrice
       }));
-
       setSalesData(chart);
-
-      // recent orders
-      const recent = orders.slice(-5).map((o:any)=>({
-        id: o.id,
-        table: o.tableId,
-        total: o.totalAmount,
-        status: o.status
-      }));
-
-      setRecentOrders(recent);
-
-    } catch(err){
-      console.error("Dashboard error:",err);
     }
-  };
+
+    // 5. Cập nhật đơn hàng gần đây
+    if (orders.length > 0) {
+      const recent = orders.slice(-5).map((o: any) => ({
+        id: o.id,
+        table: o.tableNumber || o.tableId || "N/A",
+        total: o.totalAmount || 0,
+        status: o.orderStatus || o.status
+      }));
+      setRecentOrders(recent);
+    }
+
+  } catch (err) {
+    console.error("Critical Dashboard Error:", err);
+  }
+};
 
   const cards = [
     { label:"Revenue Today", value:`$${stats.revenueToday}` },

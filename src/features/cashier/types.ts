@@ -30,11 +30,12 @@ export interface ApiResponse<T> {
 }
 
 export interface TableResponse {
-  currentBill: any;
+  currentBill: BillResponse | null;
   id: number;
   tableNumber: string;
   status: TableStatus;
   capacity: number;
+  location?: string;
   qrCode?: string;
 }
 
@@ -84,4 +85,8 @@ export interface PaymentResponse {
   paymentUrl?: string; // URL MoMo trả về
   transactionId?: string;
   paidAt?: string;
+}
+
+export interface MergeBillRequest {
+    billIds: number[];
 }

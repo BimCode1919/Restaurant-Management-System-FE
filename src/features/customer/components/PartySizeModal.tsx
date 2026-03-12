@@ -6,9 +6,19 @@ interface PartySizeModalProps {
 }
 
 const PartySizeModal: React.FC<PartySizeModalProps> = ({ isOpen, onConfirm }) => {
-    const [size, setSize] = useState(1);
+    const [size, setSize] = useState<number>(1);
 
     if (!isOpen) return null;
+
+    // Hàm xử lý khi gõ tay
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value);
+        if (!isNaN(value) && value > 0) {
+            setSize(value);
+        } else if (e.target.value === "") {
+            setSize(0); // Cho phép xóa hết để gõ lại
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-300">
@@ -27,13 +37,23 @@ const PartySizeModal: React.FC<PartySizeModalProps> = ({ isOpen, onConfirm }) =>
 
                     <div className="flex items-center gap-6 mb-8">
                         <button
+                            type="button"
                             onClick={() => setSize(Math.max(1, size - 1))}
                             className="size-12 rounded-xl border-2 border-gray-100 flex items-center justify-center text-2xl font-bold hover:bg-gray-50 active:scale-90 transition-all"
                         >
                             -
                         </button>
-                        <span className="text-4xl font-black text-burgundy w-12">{size}</span>
+
+                        {/* THAY ĐỔI TẠI ĐÂY: Dùng input thay vì span */}
+                        <input
+                            type="number"
+                            value={size === 0 ? "" : size}
+                            onChange={handleInputChange}
+                            className="text-4xl font-black text-burgundy w-20 text-center bg-transparent border-b-2 border-transparent focus:border-burgundy focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+
                         <button
+                            type="button"
                             onClick={() => setSize(size + 1)}
                             className="size-12 rounded-xl border-2 border-gray-100 flex items-center justify-center text-2xl font-bold hover:bg-gray-50 active:scale-90 transition-all"
                         >
@@ -42,8 +62,9 @@ const PartySizeModal: React.FC<PartySizeModalProps> = ({ isOpen, onConfirm }) =>
                     </div>
 
                     <button
-                        onClick={() => onConfirm(size)}
-                        className="w-full bg-burgundy text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-burgundy/20 hover:scale-[1.02] active:scale-95 transition-all"
+                        onClick={() => size > 0 && onConfirm(size)}
+                        className="w-full bg-burgundy text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-burgundy/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                        disabled={size <= 0}
                     >
                         Start Ordering
                     </button>

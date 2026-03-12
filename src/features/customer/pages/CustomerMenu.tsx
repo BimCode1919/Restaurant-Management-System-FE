@@ -39,6 +39,7 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col font-sans relative">
+
       <PartySizeModal
         isOpen={menuData.isPartyModalOpen}
         onConfirm={menuData.handleInitializeSession}
@@ -51,6 +52,7 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
           </div>
           <h1 className="text-xl font-black text-dark-gray uppercase tracking-tighter italic">Culina</h1>
         </div>
+
         <div className="px-4 py-2 bg-burgundy/10 rounded-full text-[10px] font-black uppercase tracking-widest text-burgundy border border-burgundy/20">
           Table {store?.tableNumber || "N/A"}
         </div>
@@ -62,7 +64,10 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
           <button
             key={tab}
             onClick={() => menuData.setActiveTab(tab as any)}
-            className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${menuData.activeTab === tab ? 'bg-burgundy text-white shadow-xl shadow-burgundy/20' : 'text-gray-400'}`}
+            className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${menuData.activeTab === tab
+                ? 'bg-burgundy text-white shadow-xl shadow-burgundy/20'
+                : 'text-gray-400'
+              }`}
           >
             {tab === 'STATUS' ? 'My Orders' : 'Menu'}
           </button>
@@ -73,7 +78,7 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
         {renderContent()}
       </main>
 
-      {/* Floating Review Button - Thay đổi: Mở Modal thay vì Order ngay */}
+      {/* Floating Review Button - Change: open modal instead of placing order immediately */}
       {menuData.cart.length > 0 && menuData.activeTab === 'MENU' && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-md z-50 animate-in slide-in-from-bottom-10">
           <button
@@ -84,13 +89,21 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
               <div className="size-10 bg-burgundy rounded-xl flex items-center justify-center text-white font-black animate-pulse shadow-lg shadow-burgundy/30">
                 {menuData.cart.reduce((a, b) => a + b.quantity, 0)}
               </div>
+
               <div className="text-left">
-                <span className="block font-black uppercase text-[10px] tracking-widest text-white/60 leading-none mb-1">Xem giỏ hàng</span>
-                <span className="block font-black uppercase text-xs tracking-widest italic text-burgundy-light">Kiểm tra món ăn</span>
+                <span className="block font-black uppercase text-[10px] tracking-widest text-white/60 leading-none mb-1">
+                  View Cart
+                </span>
+                <span className="block font-black uppercase text-xs tracking-widest italic text-burgundy-light">
+                  Review your items
+                </span>
               </div>
             </div>
+
             <div className="text-right">
-              <p className="text-[10px] font-bold text-white/40 uppercase tracking-tighter leading-none">Tổng cộng</p>
+              <p className="text-[10px] font-bold text-white/40 uppercase tracking-tighter leading-none">
+                Total
+              </p>
               <span className="text-xl font-black">
                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(menuData.cartTotal)}
               </span>
@@ -99,20 +112,35 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
         </div>
       )}
 
-      {/* 1. Modal Xem chi tiết món ăn */}
+      {/* 1. Dish detail modal */}
       {menuData.selectedItem && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-300">
           <div className="bg-white rounded-[2.5rem] overflow-hidden max-w-sm w-full shadow-2xl animate-in zoom-in-95">
+
             <div
               className="w-full h-64 bg-cover bg-center"
-              style={{ backgroundImage: `url(${menuData.selectedItem.imageUrl && menuData.selectedItem.imageUrl !== 'string' ? menuData.selectedItem.imageUrl : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500'})` }}
+              style={{
+                backgroundImage: `url(${menuData.selectedItem.imageUrl && menuData.selectedItem.imageUrl !== 'string'
+                    ? menuData.selectedItem.imageUrl
+                    : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500'
+                  })`
+              }}
             />
+
             <div className="p-8 text-center">
-              <h3 className="text-2xl font-black text-dark-gray mb-2 italic uppercase">{menuData.selectedItem.name}</h3>
-              <p className="text-gray-400 text-[11px] font-bold uppercase tracking-widest mb-4">{menuData.selectedItem.categoryName}</p>
-              <p className="text-gray-500 text-sm mb-8 leading-relaxed italic">
-                {menuData.selectedItem.description || "Món ăn đặc sắc được chế biến công phu từ nguồn nguyên liệu tươi sạch nhất trong ngày của nhà hàng."}
+              <h3 className="text-2xl font-black text-dark-gray mb-2 italic uppercase">
+                {menuData.selectedItem.name}
+              </h3>
+
+              <p className="text-gray-400 text-[11px] font-bold uppercase tracking-widest mb-4">
+                {menuData.selectedItem.categoryName}
               </p>
+
+              <p className="text-gray-500 text-sm mb-8 leading-relaxed italic">
+                {menuData.selectedItem.description ||
+                  "A signature dish carefully prepared using the freshest ingredients of the day."}
+              </p>
+
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => {
@@ -121,13 +149,14 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
                   }}
                   className="w-full bg-burgundy text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-burgundy/20 hover:scale-[1.02] transition-transform"
                 >
-                  Thêm vào giỏ — {new Intl.NumberFormat('vi-VN').format(menuData.selectedItem.price)}
+                  Add to Cart — {new Intl.NumberFormat('vi-VN').format(menuData.selectedItem.price)}
                 </button>
+
                 <button
                   onClick={() => menuData.setSelectedItem(null)}
                   className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] py-2"
                 >
-                  Quay lại
+                  Back
                 </button>
               </div>
             </div>
@@ -135,8 +164,7 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
         </div>
       )}
 
-      {/* 2. Modal Review & Xác nhận đặt món */}
-      {/* 2. Modal Review & Xác nhận đặt món */}
+      {/* 2. Review & Confirm Order Modal */}
       <OrderReviewModal
         isOpen={menuData.isReviewOpen}
         onClose={() => menuData.setIsReviewOpen(false)}
@@ -144,7 +172,6 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
         updateQty={menuData.updateCartQty}
         total={menuData.cartTotal}
         onSubmit={menuData.handlePlaceOrder}
-      // LƯU Ý: Không truyền billId vào đây vì OrderReviewModal không nhận prop này
       />
     </div>
   );

@@ -3,7 +3,9 @@ import {
     ApiResponse,
     BillResponse,
     PaymentResponse,
-    CreatePaymentRequest
+    CreatePaymentRequest,
+    MergeBillRequest,
+    TableResponse
 } from '../types';
 
 export const cashierApi = {
@@ -32,5 +34,13 @@ export const cashierApi = {
         // Vì Controller trả về trực tiếp PaymentResponse (không bọc ApiResponse)
         // và axiosClient đã return response.data, nên ở đây nhận được đúng object cần thiết.
         return axiosClient.post('/payments', request);
+    },
+
+    mergeBills: (request: MergeBillRequest): Promise<ApiResponse<BillResponse>> => {
+        return axiosClient.post('/bills/merge', request);
+    },
+
+    getAllTables: (): Promise<ApiResponse<TableResponse[]>> => {
+        return axiosClient.get('/tables');
     }
 };

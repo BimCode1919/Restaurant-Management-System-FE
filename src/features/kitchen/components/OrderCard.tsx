@@ -10,25 +10,40 @@ interface Props {
     itemStatus: string;
     notes?: string;
   };
-  type: string; // Để string cho nó linh hoạt, đỡ bị lệch hoa thường
+  type: string; 
   refresh: () => void;
 }
 
 const OrderCard: React.FC<Props> = ({ order, type, refresh }) => {
   
-  // HÀM XỬ LÝ KHI BẤM NÚT "XONG MÓN"
+  // 1. HÀM XỬ LÝ KHI BẤM NÚT "XONG MÓN"
   const handleComplete = async () => {
     try {
-      // Swagger yêu cầu body là "READY" (chuỗi thuần, không phải object)
+      // Gọi API PATCH gửi chuỗi "READY" thuần trong body
       await kitchenApi.updateOrderStatus(order.id, "READY");
       refresh(); 
     } catch (error) {
-      console.error("Lỗi cập nhật trạng thái:", error);
-      alert("Không thể chuyển sang Ready. Má kiểm tra lại kết nối nhé!");
+      console.error("Status update error:", error);
+      alert("Can not update order status to Ready. Please try again.");
     }
   };
 
-  // Chuẩn hóa type về viết hoa để so sánh cho chắc
+  // 2. HÀM XỬ LÝ KHI BẤM NÚT "HỦY" (CHUYỂN VỀ PENDING)
+  const handleCancelToPending = async () => {
+    // Thêm xác nhận để tránh bấm nhầm khi đang làm việc nhanh
+    if (window.confirm(`Are you sure you want to cancel and move the dish "${order.itemName}" back to the pending queue?`)) {
+      try {
+        // Gửi chuỗi "PENDING" để đưa món ăn ra khỏi danh sách đang nấu
+        await kitchenApi.updateOrderStatus(order.id, "PENDING");
+        refresh(); 
+      } catch (error) {
+        console.error("Status update error:", error);
+        alert("Can not update order status to Pending. Please try again.");
+      }
+    }
+  };
+
+  // Chuẩn hóa type về viết hoa để so sánh logic hiển thị
   const currentType = type.toUpperCase();
 
   return (
@@ -38,29 +53,29 @@ const OrderCard: React.FC<Props> = ({ order, type, refresh }) => {
         <div className="flex justify-between items-start">
           <div>
             <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest bg-red-500/10 px-2 py-0.5 rounded">TICKET</span>
-            <h3 className="text-2xl font-black mt-1">#{order.id}</h3>
+            <h3 className="text-2xl font-black mt-1 text-white">#{order.id}</h3>
           </div>
           <div className="text-right">
             <p className="text-[10px] text-gray-500 font-mono">TABLE</p>
+            {/* Hiển thị N/A nếu API chưa trả về tableId */}
             <p className="text-lg font-black text-yellow-500">{order.tableId || "05"}</p>
           </div>
         </div>
       </div>
 
-      {/* Body Card - PHẢI HIỆN TÊN MÓN Ở ĐÂY */}
+      {/* Body Card */}
       <div className="p-5 flex-1">
         <div className="flex items-start gap-4">
           <span className="text-3xl font-black text-yellow-500 leading-none">
             {order.quantity}x
           </span>
           <div className="flex-1">
-            {/* API trả về itemName, mình dùng đúng itemName */}
             <p className="text-xl font-bold text-white leading-tight uppercase tracking-tight">
-              {order.itemName || "Doesn't exist"}
+              {order.itemName || "Unknown Item"}
             </p>
             {order.notes && (
               <div className="mt-3 p-3 bg-black/40 rounded-xl border border-white/5">
-                <p className="text-xs text-gray-400 italic">"{order.notes}"</p>
+                <p className="text-xs text-gray-400 italic text-gray-300">"{order.notes}"</p>
               </div>
             )}
           </div>
@@ -69,13 +84,23 @@ const OrderCard: React.FC<Props> = ({ order, type, refresh }) => {
 
       {/* NÚT BẤM - CHỈ HIỆN Ở CỘT PREPARING */}
       {currentType === "PREPARING" && (
-        <div className="p-4 pt-0">
+        <div className="p-4 pt-0 flex flex-col gap-2">
+          {/* Nút hoàn thành món */}
           <button
             onClick={handleComplete}
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.97]"
           >
             <span className="material-symbols-outlined fill">check_circle</span>
             Mark as Ready
+          </button>
+
+          {/* Nút hủy chuyển về Pending */}
+          <button
+            onClick={handleCancelToPending}
+            className="w-full bg-transparent border border-gray-600 hover:border-red-500/50 hover:bg-red-500/10 text-gray-400 hover:text-red-500 font-bold py-2 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.97] text-sm"
+          >
+            <span className="material-symbols-outlined text-lg">close</span>
+            Cancel to Pending
           </button>
         </div>
       )}

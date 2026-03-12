@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { reservationApi } from '../../customer/services/reservationApi'; // Đảm bảo đúng path
+import { reservationApi } from '../../customer/services/reservationApi'; // Ensure correct path
 import { ReservationWithDepositRequest } from '../../customer/types';
 
 const PaymentCallback: React.FC = () => {
@@ -17,11 +17,11 @@ const PaymentCallback: React.FC = () => {
         if (resultCode === '0') {
             setStatus('success');
 
-            // --- LUỒNG XỬ LÝ ĐẶT BÀN ONLINE ---
+            // --- ONLINE RESERVATION HANDLING ---
             if (pendingData) {
                 const reservationRequest: ReservationWithDepositRequest = {
                     ...JSON.parse(pendingData),
-                    depositAmount: 200000 // Số tiền cọc cố định
+                    depositAmount: 200000 // Fixed deposit amount
                 };
 
                 reservationApi.createReservationWithDeposit(reservationRequest)
@@ -37,14 +37,14 @@ const PaymentCallback: React.FC = () => {
                         toast.error("Payment completed successfully but failed to create reservation. Please contact the restaurant.");
                     });
             } else {
-                // --- LUỒNG XỬ LÝ THANH TOÁN TẠI QUẦY (CASHIER) ---
+                // --- CASHIER TERMINAL HANDLING ---
                 toast.success('Payment Completed Successfully!');
                 setTimeout(() => navigate('/cashier'), 5000);
             }
         } else {
             setStatus('failed');
             toast.error(message);
-            // Nếu thất bại, không xóa pending_reservation để khách có thể "Thử lại"
+            // If failed, do not clear pending_reservation so the customer can "Retry"
         }
     }, [searchParams, navigate]);
 
@@ -77,12 +77,12 @@ const PaymentCallback: React.FC = () => {
                         <p className="text-gray-500 font-bold text-sm mt-4 uppercase tracking-wide">{searchParams.get('message')}</p>
                         <button
                             onClick={() => {
-                                // Nếu là đặt bàn online, quay về trang Flow để thử lại thanh toán
+                                // If online reservation, go back to retry payment
                                 const isReservation = localStorage.getItem('pending_reservation');
                                 if (isReservation) {
-                                    navigate(-1); // Quay lại trang trước đó để thử lại
+                                    navigate(-1);
                                 } else {
-                                    navigate('/cashier'); // Quay về dashboard thu ngân
+                                    navigate('/cashier'); // Back to cashier dashboard
                                 }
                             }}
                             className="mt-8 bg-burgundy text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-transform"

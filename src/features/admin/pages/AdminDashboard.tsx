@@ -13,6 +13,7 @@ import { InventoryView } from "../components/InventoryView";
 import  InventoryModal  from "../components/InventoryModal";
 import StaffView from '../components/StaffView';
 import { useStaff } from '../hooks/useStaff';
+import StaffModal from '../components/StaffModal';
 
 const AdminDashboard: React.FC<{ store: any }> = ({ store }) => {
 
@@ -85,6 +86,8 @@ const AdminDashboard: React.FC<{ store: any }> = ({ store }) => {
                     staff={staffData.staff}
                     loading={staffData.loading}
                     onDelete={staffData.deleteStaff}
+                    onEdit={staffData.openEditModal} 
+                    onAddNew={staffData.openAddModal}
                 />);
 
             default:
@@ -130,6 +133,12 @@ const AdminDashboard: React.FC<{ store: any }> = ({ store }) => {
                 isOpen={isInventoryModalOpen}   
                 onClose={() => setIsInventoryModalOpen(false)}
                 onSuccess={inventory.fetchIngredients}
+            />
+            <StaffModal 
+                isOpen={staffData.isModalOpen} 
+                onClose={() => staffData.setIsModalOpen(false)} 
+                onSuccess={staffData.fetchStaff} 
+                editingStaff={staffData.selectedStaff} 
             />
 
             {adminData.isManualOrderOpen && (
