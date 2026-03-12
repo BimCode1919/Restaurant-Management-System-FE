@@ -7,6 +7,8 @@ import { FilterType, TableFilterBar } from '../components/TableFilterBar';
 import { TableActionModal } from '../components/TableActionModal';
 import { NewOrderModal } from '../components/NewOrderModal';
 import { Toaster, toast } from 'react-hot-toast';
+import { ReservationDetailsModal } from '../components/ReservationDetailsModal';
+import { Merge } from 'lucide-react';
 
 const StaffDashboard: React.FC = () => {
   const { state, actions } = useStaffOrder();
@@ -16,6 +18,41 @@ const StaffDashboard: React.FC = () => {
     show: false, table: null, fullBillData: null
   });
   const notifiedItems = React.useRef<Set<string>>(new Set());
+  const [selectedTableIds, setSelectedTableIds] = useState<number[]>([]);
+
+  const handleTableSelection = (table: TableResponse) => {
+    // Nếu bàn bận, mở quản lý bàn như cũ
+    if (table.status === TableStatus.OCCUPIED || table.status === TableStatus.RESERVED) {
+      handleManageTable(table);
+      return;
+    }
+
+    // Nếu bàn trống, thực hiện toggle chọn để gộp
+    setSelectedTableIds(prev =>
+      prev.includes(table.id)
+        ? prev.filter(id => id !== table.id)
+        : [...prev, table.id]
+    );
+  };
+
+  const handleConfirmMerge = () => {
+    if (selectedTableIds.length === 0) return;
+
+    const firstTable = state.tables.find(t => t.id === selectedTableIds[0]);
+
+    if (firstTable) {
+      // Đính kèm danh sách ID đã chọn vào object bàn để useStaffOrder có thể truy xuất
+      actions.setSelectedTable({
+        ...firstTable,
+        mergedIds: [...selectedTableIds]
+      } as any);
+
+      actions.setOrderStep('PARTY_SIZE');
+      actions.setIsOrdering(true);
+      // Reset selection để UI sạch sẽ sau khi nhấn
+      setSelectedTableIds([]);
+    }
+  };
 
   useEffect(() => {
     if (!state.tables || state.tables.length === 0) return;
@@ -69,6 +106,20 @@ const StaffDashboard: React.FC = () => {
   // HÀM QUAN TRỌNG: Fetch dữ liệu món ăn trước khi mở modal
   const handleManageTable = async (table: TableResponse) => {
     const billId = table.currentBill?.id;
+    if (table.status === TableStatus.RESERVED) {
+      // Gọi API qua hook
+      const data = await actions.fetchReservationByTable(table);
+
+      // Debug trực tiếp tại đây
+      if (!data) {
+        console.log("Dữ liệu trả về từ hook bị undefined hoặc null");
+        return;
+      }
+
+      // Nếu data tồn tại, Modal sẽ tự hiển thị vì state.reservationDetail đã được set bên trong hook
+      console.log("Modal sẽ hiển thị với data:", data);
+      return;
+    }
     if (!billId) {
       alert("No active bill found for this table.");
       return;
@@ -152,8 +203,51 @@ const StaffDashboard: React.FC = () => {
 
         <TableGrid
           tables={displayTables}
-          onSelectTable={(table) => { actions.setSelectedTable(table); actions.setOrderStep('PARTY_SIZE'); actions.setIsOrdering(true); }}
+          selectedIds={selectedTableIds} // Truyền state mới xuống
+          onSelectTable={handleTableSelection} // Đổi hàm này
           onManageTable={handleManageTable}
+        />
+
+        {selectedTableIds.length > 0 && (
+          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[50] animate-in slide-in-from-bottom-10">
+            <div className="bg-[#1A1A1A]/95 text-white px-8 py-5 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex items-center gap-8 border border-white/10 backdrop-blur-xl">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">Selection</span>
+                {/* Chữ Tables đã chuyển sang màu trắng hoàn toàn */}
+                <span className="text-lg font-black italic">
+                  {selectedTableIds.length} <span className="text-white">Tables</span> selected
+                </span>
+              </div>
+
+              <div className="h-10 w-[1px] bg-white/10" />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setSelectedTableIds([])}
+                  className="px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:text-burgundy transition-colors"
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={handleConfirmMerge}
+                  className="bg-burgundy hover:bg-burgundy/90 text-white px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-[0.15em] flex items-center gap-3 shadow-lg shadow-burgundy/20 transition-all active:scale-95 border border-white/5"
+                >
+                  <Merge size={14} />
+                  {selectedTableIds.length > 1 ? 'Merge & Order' : 'Create Order'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <ReservationDetailsModal
+          data={state.reservationDetail}
+          onClose={() => actions.setReservationDetail(null)}
+          onAction={async (type, id, extra) => {
+            const actionExtra = type === 'CANCEL' ? { reason: 'Customer requested' } : extra;
+            const res = await actions.handleReservationAction(type, id, actionExtra);
+            if (res?.success) actions.setReservationDetail(null);
+          }}
         />
 
         {manageModal.show && manageModal.table && (

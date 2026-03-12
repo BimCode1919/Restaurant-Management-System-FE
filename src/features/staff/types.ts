@@ -167,3 +167,35 @@ export interface TableActionModalProps {
     onCancelItem: (orderDetailId: number) => void;
     onMassUpdate: (orderId: number) => void; // Thêm function này
 }
+
+export enum ReservationStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  SEATED = 'SEATED',
+  NO_SHOW = 'NO_SHOW',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED'
+}
+
+export interface ReservationResponse {
+  id: number;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  partySize: number;
+  reservationTime: string; // ISO string
+  status: ReservationStatus;
+  note: string;
+  depositRequired: boolean;
+  depositAmount: number;
+  depositPaid: boolean;
+  gracePeriodMinutes: number;
+  arrivalTime?: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+  tableNumbers: string[];
+  billId: number;
+  canCheckIn: boolean;
+  canCancel: boolean;
+  canMarkNoShow: boolean;
+}
