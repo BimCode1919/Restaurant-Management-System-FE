@@ -44,7 +44,7 @@ const OrderColumn: React.FC<Props> = ({ title, orders, type, store, refresh }) =
           ) : (
               <div className="flex flex-col items-center justify-center opacity-20 py-20">
                 <span className="material-symbols-outlined text-6xl mb-2">inbox</span>
-                <p className="text-sm font-bold uppercase tracking-widest">Trống</p>
+                <p className="text-sm font-bold uppercase tracking-widest">Empty</p>
               </div>
           )}
       </div>

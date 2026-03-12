@@ -30,7 +30,7 @@ export interface MenuItem {
   price: number;
   category: string;
   description: string;
-  image: string;
+  imageURL: string;
   available: boolean;
 }
 

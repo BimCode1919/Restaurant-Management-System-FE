@@ -1,4 +1,3 @@
-// src/features/staff/hooks/useStaffOrder.ts
 import { useState, useCallback, useMemo } from 'react';
 import { staffApi } from '../services/staffApi';
 import {
@@ -189,6 +188,22 @@ export const useStaffOrder = () => {
       setLoading(false);
     }
   }, [refreshData]);
+  // ===================== PHỤC VỤ MÓN ĂN =====================
+  const serveItem = useCallback(async (orderDetailId: number) => {
+    setLoading(true);
+    try {
+      await staffApi.serveItem(orderDetailId);
+      toast.success("Served successfully!");
+      await refreshData(); // Refresh để UI cập nhật món đó biến mất hoặc đổi màu
+      return { success: true };
+    } catch (error: any) {
+      console.error("Serve item failed", error);
+      toast.error(error.response?.data?.message || "Failed to serve item");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [refreshData]);
 
   // Quan trọng: Bọc actions trong useMemo để tránh re-render loop
   const actions = useMemo(() => ({
@@ -205,7 +220,8 @@ export const useStaffOrder = () => {
     massUpdateOrderStatus,
     fetchReservationByTable,
     handleReservationAction,
-    setReservationDetail
+    setReservationDetail,
+    serveItem
   }), [refreshData, finalizeOrder, resetOrderFlow, massUpdateOrderStatus]);
 
   return {

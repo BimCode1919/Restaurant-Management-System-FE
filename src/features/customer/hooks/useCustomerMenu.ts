@@ -38,9 +38,13 @@ export const useCustomerMenu = (store: any) => {
                     console.log("Table is Available. Opening modal...");
                     setIsPartyModalOpen(true); // Mở modal nhập số người
                 }
-            } catch (error) {
-                console.log("No active bill found or Error. Opening modal...");
-                setIsPartyModalOpen(true);
+            } catch (error: any) {
+            console.log("Bill not found or expired. Cleaning up...");
+            
+            // XỬ LÝ LỖI 404 Ở ĐÂY NÈ MÁ
+            localStorage.removeItem('activeBillId'); // Xóa cái ID: 10 "hồn ma" đó đi
+            setCurrentBillId(null);
+            setIsPartyModalOpen(true); // Mở lại modal cho người ta tạo Bill mới
             } finally {
                 setLoading(false);
             }

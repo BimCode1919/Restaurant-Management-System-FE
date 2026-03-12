@@ -67,13 +67,13 @@ const ReservationFlow: React.FC = () => {
 const handlePlaceOrderWithDeposit = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
-    const now = new Date();
-        // Tạo một thời điểm trong tương lai (ví dụ: 2 giờ sau) để test chắc chắn không lỗi
-        const futureDate = new Date(now.getTime() + 2 * 60 * 60 * 1000); 
+    // const now = new Date();
+    //     // Tạo một thời điểm trong tương lai (ví dụ: 2 giờ sau) để test chắc chắn không lỗi
+    //     const futureDate = new Date(now.getTime() + 2 * 60 * 60 * 1000); 
         
-        const formattedDate = futureDate.toISOString()
-            .replace('T', ' ')
-            .split('.')[0];
+    //     const formattedDate = futureDate.toISOString()
+    //         .replace('T', ' ')
+    //         .split('.')[0];
     try {
 
         // BƯỚC 1: Tạo Reservation để lấy Bill ID (Gọi sang Reservation API)
@@ -154,7 +154,7 @@ const handlePlaceOrderWithDeposit = async () => {
       </header>
 
       <main className="p-6 max-w-2xl mx-auto">
-        {step === 'SELECT_TABLE' && <TableView onSelect={handleTableSelect} minCapacity={5} />}
+        {step === 'SELECT_TABLE' && <TableView onSelect={handleTableSelect} minCapacity={isLargeGroup ? 6 : 2} />}
         {step === 'SELECT_MENU' && (
           <MenuListView 
             items={menuItems} 

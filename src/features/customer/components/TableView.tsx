@@ -71,7 +71,8 @@ useEffect(() => {
                             <span className="material-symbols-outlined">chair</span>
                         </div>
                         <span className="font-black text-lg text-dark-gray">Table {table.tableNumber}</span>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter italic">Capacity: {table.capacity} guests</span>
+                       {/* <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter italic">Capacity: {table.capacity} guests</span> */}
+                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter italic">Tab to interact</span>
                     </button>
                 ))}
             </div>

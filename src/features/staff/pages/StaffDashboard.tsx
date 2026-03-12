@@ -280,6 +280,7 @@ const StaffDashboard: React.FC = () => {
                 // Lỗi đã được xử lý bằng alert trong hook, hoặc dùng toast ở đây
               }
             }}
+            onServeItem={actions.serveItem} // Thêm hàm serveItem vào props
           />
         )}
       </main>

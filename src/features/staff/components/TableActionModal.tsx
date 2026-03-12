@@ -2,7 +2,7 @@ import React from 'react';
 import { ItemStatus, OrderResponse, TableActionModalProps } from '../types';
 
 export const TableActionModal: React.FC<TableActionModalProps> = ({
-    tableNumber, billData, onClose, onUpdateOrder, onCancelItem, onMassUpdate
+    tableNumber, billData, onClose, onUpdateOrder, onCancelItem, onMassUpdate, onServeItem
 }) => {
 
     // Gom tất cả items và xác định các Order có món PENDING
@@ -56,41 +56,75 @@ export const TableActionModal: React.FC<TableActionModalProps> = ({
                         </div>
                         <span className="material-symbols-outlined text-gray-300 group-hover:translate-x-2 transition-transform">arrow_forward</span>
                     </button>
+                {/* Danh sách món */}
+                <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Order History</h3>
+                    <div className="grid gap-3">
+                        {(() => {
+                            // Gom filter vào một biến tạm để dùng chung
+                            const activeItems = allItems.filter((item) => item.itemStatus !== 'SERVED');
 
-                    {/* Danh sách món */}
-                    <div className="space-y-4">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Order History</h3>
-                        <div className="grid gap-3">
-                            {allItems.map((item) => {
-                                const isCancelled = item.itemStatus === ItemStatus.CANCELLED;
-                                const isPending = item.itemStatus === ItemStatus.PENDING;
+                            if (activeItems.length > 0) {
+                                return activeItems.map((item) => {
+                                    const isCancelled = item.itemStatus === ItemStatus.CANCELLED;
+                                    const isPending = item.itemStatus === ItemStatus.PENDING;
+                                    const isReady = item.itemStatus === 'READY';
 
-                                return (
-                                    <div key={item.id} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isCancelled ? 'opacity-40 bg-gray-50' : 'bg-white shadow-sm'}`}>
-                                        <div className="flex items-center gap-4">
-                                            <div className="size-10 rounded-xl bg-gray-50 flex items-center justify-center font-black text-xs text-dark-gray italic">{item.quantity}x</div>
-                                            <div>
-                                                <p className={`font-bold text-sm ${isCancelled ? 'line-through' : 'text-dark-gray'}`}>{item.itemName}</p>
-                                                <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${isCancelled ? 'bg-red-100 text-red-500' :
-                                                    isPending ? 'bg-orange-100 text-orange-500 animate-pulse' : 'bg-olive/10 text-olive'
+                                    return (
+                                        <div key={item.id} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isCancelled ? 'opacity-40 bg-gray-50' : 'bg-white shadow-sm'}`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className="size-10 rounded-xl bg-gray-50 flex items-center justify-center font-black text-xs text-dark-gray italic">
+                                                    {item.quantity}x
+                                                </div>
+                                                <div>
+                                                    <p className={`font-bold text-sm ${isCancelled ? 'line-through' : 'text-dark-gray'}`}>
+                                                        {item.itemName}
+                                                    </p>
+                                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${
+                                                        isCancelled ? 'bg-red-100 text-red-500' :
+                                                        isPending ? 'bg-orange-100 text-orange-500 animate-pulse' : 
+                                                        isReady ? 'bg-emerald-100 text-emerald-600' : 'bg-olive/10 text-olive'
                                                     }`}>
-                                                    {item.itemStatus}
-                                                </span>
+                                                        {item.itemStatus}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                {isReady && (
+                                                    <button
+                                                        onClick={() => onServeItem(item.id)}
+                                                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.95] group"
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg font-bold group-hover:rotate-12 transition-transform">check_circle</span>
+                                                        <span className="text-[10px] font-black uppercase tracking-wider italic">Serve</span>
+                                                    </button>
+                                                )}
+
+                                                {isPending && (
+                                                    <button
+                                                        onClick={() => onCancelItem(item.id)}
+                                                        className="size-10 rounded-xl text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-50"
+                                                    >
+                                                        <span className="material-symbols-outlined text-xl font-bold">close</span>
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
-                                        {isPending && (
-                                            <button
-                                                onClick={() => onCancelItem(item.id)}
-                                                className="size-10 rounded-xl text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-50"
-                                            >
-                                                <span className="material-symbols-outlined text-xl font-bold">close</span>
-                                            </button>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                });
+                            }
+
+                            return (
+                                /* Hiển thị khi không còn món nào cần xử lý */
+                                <div className="py-10 text-center border-2 border-dashed border-gray-100 rounded-[2rem] bg-gray-50/30">
+                                    <span className="material-symbols-outlined text-gray-200 text-4xl mb-2">done_all</span>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">All items have been served</p>
+                                </div>
+                            );
+                        })()}
                     </div>
+                </div>
                 </div>
 
                 {/* Footer mới: Tích hợp Send To Kitchen */}

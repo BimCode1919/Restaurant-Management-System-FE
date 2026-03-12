@@ -120,8 +120,8 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
             <div
               className="w-full h-64 bg-cover bg-center"
               style={{
-                backgroundImage: `url(${menuData.selectedItem.imageUrl && menuData.selectedItem.imageUrl !== 'string'
-                    ? menuData.selectedItem.imageUrl
+                backgroundImage: `url(${menuData.selectedItem.imageURL && menuData.selectedItem.imageURL !== 'string'
+                    ? menuData.selectedItem.imageURL
                     : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500'
                   })`
               }}
