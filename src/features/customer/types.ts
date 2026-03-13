@@ -147,6 +147,33 @@ export interface BillResponse {
 }
 
 export interface DiscountResponse {
+    id: number;
+    code: string;
+    percentage: number;
+    maxAmount: number;
+}
+// --- 9. AI Recommendation Types ---
+export interface AIRecommendRequest {
+  prompt: string;
+  budget: number;
+  people: number;
+  preferences: {
+    spicy: boolean;
+    vegetarian: boolean;
+    mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  };
+}
+
+export interface AIRecommendResponse {
+  appetizer: string;
+  mainCourse: string;
+  dessert: string;
+}
+
+export interface AIEmbeddingsResponse {
+  statusCode: number;
+  message: string;
+  responseAt: string;
   id: number;
   code: string;
   percentage: number;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
+// import { toast } from 'react-hot-toast'; tắt mẹ thông báo.
 
 const PaymentCallback: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -17,7 +17,7 @@ const PaymentCallback: React.FC = () => {
 
         if (resultCode === '0') {
             setStatus('success');
-            toast.success('Deposit paid successfully!');
+            //toast.success('Deposit paid successfully!');
 
             // Redirect to Home after 6 seconds so they can read the email notice
             const timer = setTimeout(() => {
@@ -27,7 +27,7 @@ const PaymentCallback: React.FC = () => {
             return () => clearTimeout(timer);
         } else {
             setStatus('failed');
-            toast.error(message);
+            //toast.error(message);
         }
     }, [searchParams, navigate]);
 

@@ -51,15 +51,33 @@ const filteredItems = selectedCategory === 'ALL'
               onClick={() => onView(item)}
               className="size-24 rounded-2xl overflow-hidden shrink-0 border border-gray-50 cursor-pointer"
             >
-             <img 
-                src={item.imageURL} 
-                alt={item.name}
-                className="w-full h-full object-cover" // Giúp ảnh lấp đầy khung mà không bị méo
-                onError={(e) => {
-                  console.log("Lỗi ở món: ", item.name);
-                  console.log("Đường dẫn thử truy cập: ", item.imageURL);
-                }}
-              />
+             <div className="size-24 rounded-2xl overflow-hidden shrink-0 border border-gray-50">
+                <img 
+                  // 1. Sử dụng item.id để khớp với tên file trong thư mục public/menu/
+                  // Lưu ý: Vì ảnh nằm trong public/menu nên đường dẫn bắt đầu từ /menu/
+                  src={`/menu/${item.id}.jpg`} 
+                  
+                  alt={item.name}
+                  className="w-full h-full object-cover"
+                  
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    
+                    // 2. Nếu không tìm thấy file id.jpg, thử tìm file id.png (phòng hờ sai định dạng)
+                    const pngFallback = `/menu/${item.id}.png`;
+                    
+                    // 3. Nếu cả 2 đều hẻo, dùng ảnh random theo chủ đề món ăn cho đẹp
+                    const randomFoodUrl = `https://loremflickr.com/400/400/food,${encodeURIComponent(item.name)}`;
+                    
+                    if (target.src.includes('.jpg') && !target.src.includes('loremflickr')) {
+                      target.src = pngFallback;
+                    } else if (target.src !== randomFoodUrl) {
+                      target.src = randomFoodUrl;
+                      target.onerror = null; // Dừng loop
+                    }
+                  }}
+                />
+              </div>
             </div>
 
             <div className="flex-1 flex flex-col justify-between py-1">

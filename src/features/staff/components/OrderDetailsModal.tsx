@@ -98,7 +98,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ bill, onCl
               <div className="flex items-center gap-4 mb-1">
                 <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">Total Amount</p>
                 {bill.discountAmount > 0 && (
-                  <span className="text-[10px] font-black text-olive uppercase">-{bill.discountAmount}$ Off</span>
+                  <span className="text-[10px] font-black text-olive uppercase">-{bill.discountAmount}VND Off</span>
                 )}
               </div>
               <p className="text-6xl font-black text-burgundy tracking-tighter leading-none">
