@@ -30,6 +30,14 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
             onView={(item) => menuData.setSelectedItem(item)}
           />
         );
+      case 'AI':
+        return (
+          <AIView 
+            menu={menuData.menu} 
+            onAdd={menuData.addToCart} 
+            cart={menuData.cart} // Thêm dòng này
+          />
+        ); 
       case 'STATUS':
         return <OrderStatusView billId={menuData.currentBillId || Number(localStorage.getItem('activeBillId')) || 0} />;
       default:
@@ -39,12 +47,10 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col font-sans relative">
-
       <PartySizeModal
         isOpen={menuData.isPartyModalOpen}
         onConfirm={menuData.handleInitializeSession}
       />
-
       <header className="bg-white p-6 sticky top-0 z-50 flex justify-between items-center border-b border-gray-50">
         <div className="flex items-center gap-3">
           <div className="size-10 bg-burgundy rounded-xl flex items-center justify-center text-white shadow-lg shadow-burgundy/20">
@@ -60,25 +66,26 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
 
       {/* Navigation Tabs */}
       <nav className="sticky top-[89px] z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 flex p-2 gap-2">
-        {['MENU', 'STATUS'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => menuData.setActiveTab(tab as any)}
-            className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${menuData.activeTab === tab
-                ? 'bg-burgundy text-white shadow-xl shadow-burgundy/20'
-                : 'text-gray-400'
-              }`}
-          >
-            {tab === 'STATUS' ? 'My Orders' : 'Menu'}
-          </button>
-        ))}
-      </nav>
+              {['MENU', 'AI', 'STATUS'].map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => menuData.setActiveTab(tab as any)}
+                  className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                    menuData.activeTab === tab
+                      ? 'bg-burgundy text-white shadow-xl shadow-burgundy/20'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  {tab === 'STATUS' ? 'My Orders' : tab === 'AI' ? 'AI Suggest' : 'Menu'}
+                </button>
+              ))}
+        </nav>
 
       <main className="flex-1 p-6 pb-32 max-w-2xl mx-auto w-full">
         {renderContent()}
       </main>
 
-      {/* Floating Review Button - Change: open modal instead of placing order immediately */}
+      {/* Floating Review Button */}
       {menuData.cart.length > 0 && menuData.activeTab === 'MENU' && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-md z-50 animate-in slide-in-from-bottom-10">
           <button

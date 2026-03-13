@@ -1,5 +1,5 @@
 import axiosClient from '../../../api/axiosClient';
-import { MenuItem, ApiResponse, PageResponse, OrderResponse, BillResponse } from '../types';
+import { MenuItem, ApiResponse, PageResponse, OrderResponse, BillResponse, AIEmbeddingsResponse, AIRecommendRequest, AIRecommendResponse } from '../types';
 
 export const customerApi = {
     // Lấy menu đang kinh doanh (khớp với @GetMapping("/available"))
@@ -34,4 +34,13 @@ export const customerApi = {
     getBillById: (id: number): Promise<ApiResponse<BillResponse>> => {
         return axiosClient.get(`/bills/${id}`);
     },
+    // Gọi AI gợi ý món ăn
+    getAIRecommendation: (data: AIRecommendRequest): Promise<ApiResponse<AIRecommendResponse>> => {
+        return axiosClient.post('/ai/recommend-meal', data);
+    },
+
+    // Trigger generate embeddings (nếu cần dùng nút admin hoặc setup)
+    generateAIEmbeddings: (): Promise<AIEmbeddingsResponse> => {
+        return axiosClient.post('/ai/generate-embeddings');
+    }
 };
