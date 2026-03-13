@@ -109,26 +109,48 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = (props) => {
           <div className="flex flex-col lg:flex-row gap-10 max-w-7xl mx-auto h-full animate-in fade-in slide-in-from-right-4 duration-300">
             {/* ... Phần Menu Giữ nguyên từ code cũ của bạn, chỉ cần sửa kiểu dữ liệu id thành number ... */}
             <div className="flex-1 space-y-8">
-              <h3 className="text-xl font-black uppercase tracking-tight text-gray-400">Menu Available</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {menu.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => onAddToCart(item)}
-                    className="bg-white p-4 rounded-2xl border border-gray-100 flex gap-4 text-left hover:border-burgundy transition-all hover:shadow-lg group"
-                  >
-                    <div className="size-16 rounded-xl bg-cover shrink-0 bg-gray-100" style={{ backgroundImage: `url(${item.imageUrl})` }}></div>
-                    <div className="flex-1">
-                      <p className="font-bold text-dark-gray">{item.name}</p>
-                      <p className="text-burgundy font-black text-sm">{item.price} VND</p>
-                    </div>
-                    <div className="size-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-burgundy group-hover:text-white transition-colors">
-                      <span className="material-symbols-outlined">add</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+            <h3 className="text-xl font-black uppercase tracking-tight text-gray-400">Menu Available</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {menu.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onAddToCart(item)}
+                  className="bg-white p-4 rounded-2xl border border-gray-100 flex gap-4 text-left hover:border-burgundy transition-all hover:shadow-lg group"
+                >
+                  {/* THAY ĐỔI Ở ĐÂY: Dùng thẻ img thay vì backgroundImage để xử lý lỗi ảnh dễ hơn */}
+                  <div className="size-20 rounded-xl overflow-hidden shrink-0 bg-gray-50 border border-gray-100">
+                    <img 
+                      // Ưu tiên lấy ảnh từ public/menu/{id}.jpg
+                      src={`/menu/${item.id}.jpg`} 
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        // Nếu không có .jpg, thử lấy ảnh random từ internet theo tên món
+                        const fallbackUrl = `https://loremflickr.com/200/200/food,${encodeURIComponent(item.name)}`;
+                        
+                        if (target.src !== fallbackUrl) {
+                          target.src = fallbackUrl;
+                        }
+                        target.onerror = null; // Dừng loop
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="font-bold text-dark-gray">{item.name}</p>
+                    <p className="text-burgundy font-black text-sm">
+                      {new Intl.NumberFormat('vi-VN').format(Number(item.price))} VND
+                    </p>
+                  </div>
+                  
+                  <div className="size-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-burgundy group-hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-sm">add</span>
+                  </div>
+                </button>
+              ))}
             </div>
+          </div>
 
             {/* TICKET / CART SECTION */}
             <div className="w-full lg:w-[450px] flex flex-col bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-2xl sticky top-0 h-fit max-h-[80vh]">

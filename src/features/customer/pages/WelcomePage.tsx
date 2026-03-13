@@ -11,7 +11,7 @@ const WelcomePage: React.FC = () => {
                 <div className="size-24 bg-burgundy rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-burgundy/30 mx-auto mb-6">
                     <span className="material-symbols-outlined text-5xl">restaurant</span>
                 </div>
-                <h1 className="text-5xl font-black text-dark-gray uppercase tracking-tighter italic leading-none">Culina</h1>
+                <h1 className="text-5xl font-black text-dark-gray uppercase tracking-tighter italic leading-none">Rescho</h1>
                 <p className="text-gray-400 font-bold uppercase tracking-[0.3em] text-[10px] mt-2">Fine Dining Experience</p>
             </div>
 

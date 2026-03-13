@@ -1,7 +1,7 @@
 import { MenuItem } from '../../types';
 
 export const MENU_DATA: MenuItem[] = [
-  { id: '1', name: 'Caesar Salad', price: 65000, category: 'Appetizers', imageURL: '/images/1.jpg', description: 'Crispy romaine lettuce tossed with signature Caesar dressing and Parmesan cheese.', available: true },
+  { id: '1', name: 'Caesar Salad', price: 65000, category: 'Appetizers', imageURL: '/menu/1.jpg', description: 'Crispy romaine lettuce tossed with signature Caesar dressing and Parmesan cheese.', available: true },
   { id: '2', name: 'Caramel Flan', price: 30000, category: 'Desserts', imageURL: '/images/2.jpg', description: 'Smooth and creamy custard topped with a delicate caramel sauce.', available: true },
   { id: '3', name: 'Chicken Fried Rice', price: 75000, category: 'Main Course', imageURL: '/images/3.jpg', description: 'Savory fried rice with tender chicken, vegetables, and aromatic spices.', available: true },
   { id: '4', name: 'Chicken Noodle Soup', price: 60000, category: 'Soup', imageURL: '/images/4.jpg', description: 'Hearty chicken broth with silky noodles and fresh herbs.', available: true },

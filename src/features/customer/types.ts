@@ -147,7 +147,6 @@ export interface BillResponse {
 }
 
 export interface DiscountResponse {
-<<<<<<< HEAD
     id: number;
     code: string;
     percentage: number;
@@ -175,7 +174,6 @@ export interface AIEmbeddingsResponse {
   statusCode: number;
   message: string;
   responseAt: string;
-=======
   id: number;
   code: string;
   percentage: number;
@@ -210,5 +208,4 @@ export interface PaymentResponse {
   paidAt?: string;
   createdAt?: string;
   updatedAt?: string;
->>>>>>> e4606bb090bbeecbc0cb8b08435569f94368ae76
 }

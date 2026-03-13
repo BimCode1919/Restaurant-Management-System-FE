@@ -89,7 +89,7 @@ const Login: React.FC = () => {
               <input
                 type="email"
                 className="w-full rounded-xl border border-gray-200 h-14 px-4 focus:ring-2 focus:ring-[#800020] outline-none transition-all"
-                placeholder="admin@restomanager.com"
+                placeholder="example@restomanager.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -100,7 +100,7 @@ const Login: React.FC = () => {
               <input
                 className="w-full rounded-xl border border-gray-200 h-14 px-4 focus:ring-2 focus:ring-[#800020] outline-none transition-all"
                 type="password"
-                placeholder="••••••••"
+                placeholder="•••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

@@ -47,10 +47,12 @@ const CustomerPage: React.FC<{ store: any }> = ({ store }) => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col font-sans relative">
+
       <PartySizeModal
         isOpen={menuData.isPartyModalOpen}
         onConfirm={menuData.handleInitializeSession}
       />
+      
       <header className="bg-white p-6 sticky top-0 z-50 flex justify-between items-center border-b border-gray-50">
         <div className="flex items-center gap-3">
           <div className="size-10 bg-burgundy rounded-xl flex items-center justify-center text-white shadow-lg shadow-burgundy/20">

@@ -9,6 +9,7 @@ import { customerApi } from '../services/customerApi';
 import { reservationApi } from '../services/reservationApi';
 import { PaymentMethod } from '../../cashier/types';
 import { toast } from 'react-hot-toast';
+import AIView from '../components/AIView';
 
 const ReservationFlow: React.FC = () => {
   const location = useLocation();
@@ -16,7 +17,7 @@ const ReservationFlow: React.FC = () => {
   const isLargeGroup = location.state?.isLargeGroup || false;
 
   // --- States ---
-  const [step, setStep] = useState<'SELECT_TABLE' | 'SELECT_MENU' | 'DONE'>('SELECT_TABLE');
+  const [step, setStep] = useState<'SELECT_TABLE' | 'SELECT_MENU' | 'SELECT_AI' | 'DONE'>('SELECT_TABLE');
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -69,6 +70,14 @@ const ReservationFlow: React.FC = () => {
     }
   };
 
+  const handleAddToCart = (item: MenuItem | OrderItem) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.id === item.id);
+      if (existing) return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { ...item, quantity: 1 } as OrderItem];
+    });
+  };
+
   // Bước A: Tạo đơn đặt bàn tạm thời để lấy Deposit Amount
   const handlePlaceOrderWithDeposit = async () => {
     if (isProcessing) return;
@@ -109,7 +118,6 @@ const ReservationFlow: React.FC = () => {
         PaymentMethod.MOMO
       );
 
-      // Bây giờ paymentResponse sẽ chính là object bạn thấy trong tab Network
       console.log("Actual Response in Component:", paymentResponse);
 
       if (paymentResponse && paymentResponse.paymentUrl) {
@@ -233,7 +241,7 @@ const ReservationFlow: React.FC = () => {
     );
   }
 
-  // Màn hình Thành công (Cho khách không đặt cọc)
+  // Màn hình Thành công
   if (step === 'DONE') {
     return (
       <div className="min-h-screen bg-[#FDFDFD] flex items-center justify-center p-6 text-center">
@@ -260,7 +268,7 @@ const ReservationFlow: React.FC = () => {
     <div className="min-h-screen bg-[#FDFDFD] pb-32">
       <header className="p-6 bg-white border-b flex items-center gap-4 sticky top-0 z-30">
         <button
-          onClick={() => step === 'SELECT_MENU' ? setStep('SELECT_TABLE') : navigate(-1)}
+          onClick={() => (step === 'SELECT_MENU' || step === 'SELECT_AI') ? setStep('SELECT_TABLE') : navigate(-1)}
           className="text-gray-400"
         >
           <span className="material-symbols-outlined">arrow_back</span>
@@ -270,19 +278,40 @@ const ReservationFlow: React.FC = () => {
         </h1>
       </header>
 
+      {/* Tabs navigation cho Large Group */}
+      {isLargeGroup && (step === 'SELECT_MENU' || step === 'SELECT_AI') && (
+        <div className="flex bg-white border-b sticky top-[73px] z-20 p-1">
+          <button 
+            onClick={() => setStep('SELECT_MENU')} 
+            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${step === 'SELECT_MENU' ? 'bg-dark-gray text-white rounded-xl shadow-md' : 'text-gray-400'}`}
+          >
+            Menu List
+          </button>
+          <button 
+            onClick={() => setStep('SELECT_AI')} 
+            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${step === 'SELECT_AI' ? 'bg-burgundy text-white rounded-xl shadow-md' : 'text-gray-400'}`}
+          >
+            AI Suggestion
+          </button>
+        </div>
+      )}
+
       <main className="p-6 max-w-2xl mx-auto">
         {step === 'SELECT_TABLE' && <TableView onSelect={handleTableSelect} minCapacity={isLargeGroup ? 6 : 2} />}
+        
         {step === 'SELECT_MENU' && (
           <MenuListView
             items={menuItems}
-            onAdd={(item) => {
-              setCart(prev => {
-                const existing = prev.find(i => i.id === item.id);
-                if (existing) return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
-                return [...prev, { ...item, quantity: 1 }];
-              });
-            }}
+            onAdd={handleAddToCart}
             onView={() => { }}
+          />
+        )}
+
+        {step === 'SELECT_AI' && (
+          <AIView 
+            menu={menuItems} 
+            cart={cart}
+            onAdd={handleAddToCart}
           />
         )}
       </main>
@@ -298,7 +327,7 @@ const ReservationFlow: React.FC = () => {
         isLargeGroup={isLargeGroup}
       />
 
-      {isLargeGroup && step === 'SELECT_MENU' && cart.length > 0 && (
+      {isLargeGroup && (step === 'SELECT_MENU' || step === 'SELECT_AI') && cart.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-md z-40">
           <button
             onClick={() => setIsReviewOpen(true)}
