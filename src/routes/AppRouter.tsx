@@ -12,6 +12,8 @@ import { getGuestInfo } from '../features/customer/jwtUtils';
 import KitchenPage from '../features/kitchen/pages/KitchenPage';
 import WelcomePage from '../features/customer/pages/WelcomePage';
 import ReservationFlow from '../features/customer/pages/ReservationFlow';
+import PaymentCallbackCustomer from '../features/customer/pages/PaymentCallback';
+
 // Import tạm các Page (Bạn sẽ thay thế bằng code của bạn)
 const Unauthorized = () => <div>Where ur permission?</div>;
 
@@ -62,6 +64,7 @@ const AppRouter = () => {
         <Route path="/customer" element={<CustomerPage store={mockStore} />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="/session/:qrCode" element={<GuestLanding />} />
+        <Route path="/payment-callback" element={<PaymentCallback />} />
 
         {/* Private Routes: Admin & Manager */}
         <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>

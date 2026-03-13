@@ -20,5 +20,29 @@ export const reservationApi = {
     // Kiểm tra thông tin đặt bàn bằng ID
     getReservationById: (id: number): Promise<ApiResponse<ReservationResponse>> => {
         return axiosClient.get(`/reservations/${id}`);
+    },
+
+    // src/customer/services/reservationApi.ts
+
+    payReservationDeposit: (reservationId: number, method: string): Promise<any> => {
+        // PHẢI CÓ chữ return ở đầu dòng axios
+        return axiosClient.post(`/payments/reservations/${reservationId}/deposit`, null, {
+            params: { request: method }
+        })
+            .then(res => {
+                // Log tại đây để kiểm tra dữ liệu thô từ axios
+                console.log("Axios Raw Response:", res);
+                return res.data; // Trả về res.data chính là object có chứa paymentUrl
+            })
+            .catch(err => {
+                console.error("API Error:", err);
+                throw err;
+            });
+    },
+
+    cancelReservation: (id: number, reason?: string): Promise<ApiResponse<ReservationResponse>> => {
+        // Gửi reason qua params nếu có
+        const params = reason ? { reason } : {};
+        return axiosClient.put(`/reservations/${id}/cancel`, null, { params });
     }
 };
