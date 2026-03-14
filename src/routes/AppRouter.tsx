@@ -64,7 +64,7 @@ const AppRouter = () => {
         <Route path="/customer" element={<CustomerPage store={mockStore} />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="/session/:qrCode" element={<GuestLanding />} />
-        <Route path="/payment-callback" element={<PaymentCallback />} />
+        <Route path="/payment-callback" element={<PaymentCallbackCustomer />} />
 
         {/* Private Routes: Admin & Manager */}
         <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>

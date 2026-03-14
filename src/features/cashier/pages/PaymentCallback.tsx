@@ -1,94 +1,60 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { reservationApi } from '../../customer/services/reservationApi'; // Ensure correct path
-import { ReservationWithDepositRequest } from '../../customer/types';
+import axiosClient from '../../../api/axiosClient';
 
-const PaymentCallback: React.FC = () => {
+const CashierPaymentCallback: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [status, setStatus] = useState<'processing' | 'success' | 'failed'>('processing');
+    const initialized = useRef(false);
 
     useEffect(() => {
+        if (initialized.current) return;
+        initialized.current = true;
+
         const resultCode = searchParams.get('resultCode');
-        const message = searchParams.get('message') || 'Payment failed';
-        const pendingData = localStorage.getItem('pending_reservation');
+        const orderId = searchParams.get('orderId');
 
         if (resultCode === '0') {
-            setStatus('success');
-
-            // --- ONLINE RESERVATION HANDLING ---
-            if (pendingData) {
-                const reservationRequest: ReservationWithDepositRequest = {
-                    ...JSON.parse(pendingData),
-                    depositAmount: 200000 // Fixed deposit amount
-                };
-
-                reservationApi.createReservationWithDeposit(reservationRequest)
-                    .then((response) => {
-                        toast.success(`Reservation successfully, Reservation ID: ${response.data.id}`);
-                        localStorage.removeItem('pending_reservation'); // Xóa sau khi dùng xong
-                        
-                        // Chuyển sang màn hình thành công của Customer
-                        setTimeout(() => navigate('/reservation/success', { state: { reservation: response.data } }), 2000);
-                    })
-                    .catch(err => {
-                        console.error("Reservation API Error:", err);
-                        toast.error("Payment completed successfully but failed to create reservation. Please contact the restaurant.");
-                    });
-            } else {
-                // --- CASHIER TERMINAL HANDLING ---
-                toast.success('Payment Completed Successfully!');
-                setTimeout(() => navigate('/cashier'), 5000);
-            }
+            // Bước quan trọng: Gọi API Confirm để Backend cập nhật status Bill = PAID
+            axiosClient.post(`/payments/momo/confirm-order?orderId=${orderId}`)
+                .then(() => {
+                    setStatus('success');
+                    toast.success('Bill updated to PAID status');
+                    // Đợi 2s để nhân viên thấy thông báo rồi mới về Dashboard
+                    setTimeout(() => navigate('/cashier', { replace: true }), 2000);
+                })
+                .catch(() => {
+                    setStatus('failed');
+                    toast.error("Failed to sync payment status with server.");
+                });
         } else {
             setStatus('failed');
-            toast.error(message);
-            // If failed, do not clear pending_reservation so the customer can "Retry"
+            toast.error("Payment was not successful.");
         }
     }, [searchParams, navigate]);
 
     return (
-        <div className="h-screen bg-white flex items-center justify-center p-6">
-            <div className="max-w-md w-full text-center space-y-8">
+        <div className="h-screen flex items-center justify-center bg-[#F8F9FA]">
+            <div className="text-center">
                 {status === 'processing' && (
-                    <div className="animate-pulse flex flex-col items-center">
-                        <div className="size-20 border-8 border-burgundy/10 border-t-burgundy rounded-full animate-spin mb-4" />
-                        <p className="font-black uppercase text-sm italic tracking-widest">Processing transaction...</p>
+                    <div className="flex flex-col items-center">
+                        <div className="size-12 border-4 border-burgundy border-t-transparent rounded-full animate-spin mb-4" />
+                        <p className="font-black uppercase text-[10px] tracking-widest text-dark-gray">Synchronizing with MoMo...</p>
                     </div>
                 )}
-
                 {status === 'success' && (
-                    <div className="bg-olive/5 border border-olive/20 p-10 rounded-[3rem] animate-in zoom-in-95 duration-500">
-                        <div className="size-20 bg-olive text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-olive/20">✓</div>
-                        <h2 className="text-3xl font-black italic text-olive uppercase tracking-tighter">Payment Successful</h2>
-                        <p className="text-gray-500 font-bold text-sm mt-4 uppercase leading-relaxed">
-                            {localStorage.getItem('pending_reservation') 
-                                ? 'Your reservation request is being processed...' 
-                                : 'The bill has been paid. You can now clear the table.'}
-                        </p>
+                    <div className="animate-in zoom-in-95">
+                        <span className="material-symbols-outlined text-6xl text-olive mb-4">check_circle</span>
+                        <h2 className="text-2xl font-black italic text-dark-gray uppercase">Transaction Verified</h2>
                     </div>
                 )}
-
                 {status === 'failed' && (
-                    <div className="bg-burgundy/5 border border-burgundy/20 p-10 rounded-[3rem]">
-                        <div className="size-20 bg-burgundy text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-burgundy/20">✕</div>
-                        <h2 className="text-3xl font-black italic text-burgundy uppercase tracking-tighter">Payment Failed</h2>
-                        <p className="text-gray-500 font-bold text-sm mt-4 uppercase tracking-wide">{searchParams.get('message')}</p>
-                        <button
-                            onClick={() => {
-                                // If online reservation, go back to retry payment
-                                const isReservation = localStorage.getItem('pending_reservation');
-                                if (isReservation) {
-                                    navigate(-1);
-                                } else {
-                                    navigate('/cashier'); // Back to cashier dashboard
-                                }
-                            }}
-                            className="mt-8 bg-burgundy text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-transform"
-                        >
-                            Try Again
-                        </button>
+                    <div>
+                        <span className="material-symbols-outlined text-6xl text-burgundy mb-4">error</span>
+                        <h2 className="text-xl font-black text-dark-gray uppercase">Verification Failed</h2>
+                        <button onClick={() => navigate('/cashier')} className="mt-4 text-xs font-bold underline">Back to Dashboard</button>
                     </div>
                 )}
             </div>
@@ -96,4 +62,4 @@ const PaymentCallback: React.FC = () => {
     );
 };
 
-export default PaymentCallback;
+export default CashierPaymentCallback;

@@ -44,5 +44,9 @@ export const reservationApi = {
         // Gửi reason qua params nếu có
         const params = reason ? { reason } : {};
         return axiosClient.put(`/reservations/${id}/cancel`, null, { params });
-    }
+    },
+
+    checkDepositStatus: (reservationId: number): Promise<ApiResponse<PaymentResponse>> => {
+        return axiosClient.get(`/payments/reservations/${reservationId}/deposit/status`);
+    },
 };

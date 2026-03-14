@@ -42,5 +42,10 @@ export const cashierApi = {
 
     getAllTables: (): Promise<ApiResponse<TableResponse[]>> => {
         return axiosClient.get('/tables');
-    }
+    },
+    
+    // Thêm hàm này vào cashierApi
+    checkPaymentStatus: (paymentId: number): Promise<PaymentResponse> => {
+        return axiosClient.get(`/payments/${paymentId}/status`);
+    },
 };

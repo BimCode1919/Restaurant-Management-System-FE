@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { reservationApi } from '../services/reservationApi';
 // import { toast } from 'react-hot-toast'; tắt mẹ thông báo.
 
 const PaymentCallback: React.FC = () => {
@@ -14,21 +15,30 @@ const PaymentCallback: React.FC = () => {
 
         const resultCode = searchParams.get('resultCode');
         const message = searchParams.get('message') || 'Transaction failed';
+        const orderId = searchParams.get('orderId');
+        const reservationId = searchParams.get('reservationId') || orderId?.split('_')[1];
 
-        if (resultCode === '0') {
-            setStatus('success');
-            //toast.success('Deposit paid successfully!');
+        const verifyPayment = async () => {
+            if (resultCode === '0' && reservationId) {
+                try {
+                    // GỌI API BACKEND ĐỂ XÁC NHẬN (Endpoint bạn vừa viết)
+                    await reservationApi.checkDepositStatus(Number(reservationId));
 
-            // Redirect to Home after 6 seconds so they can read the email notice
-            const timer = setTimeout(() => {
-                navigate('/', { replace: true });
-            }, 6000);
+                    setStatus('success');
 
-            return () => clearTimeout(timer);
-        } else {
-            setStatus('failed');
-            //toast.error(message);
-        }
+                    const timer = setTimeout(() => {
+                        navigate('/', { replace: true });
+                    }, 6000);
+                    return () => clearTimeout(timer);
+                } catch (error) {
+                    console.error("Verification failed", error);
+                    setStatus('failed');
+                }
+            } else {
+                setStatus('failed');
+            }
+        };
+        verifyPayment();
     }, [searchParams, navigate]);
 
     return (
@@ -50,12 +60,12 @@ const PaymentCallback: React.FC = () => {
                             <span className="material-symbols-outlined text-4xl">check</span>
                         </div>
                         <h2 className="text-3xl font-black italic uppercase text-dark-gray tracking-tighter">Perfect!</h2>
-                        
+
                         <div className="space-y-4 mt-4">
                             <p className="text-gray-600 text-sm font-medium">
                                 Your deposit of <span className="text-dark-gray font-bold">{new Intl.NumberFormat('vi-VN').format(Number(searchParams.get('amount')))}đ</span> has been received.
                             </p>
-                            
+
                             {/* Email Confirmation Notice */}
                             <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100">
                                 <p className="text-blue-800 text-xs leading-relaxed font-bold uppercase tracking-tight">
@@ -66,7 +76,7 @@ const PaymentCallback: React.FC = () => {
 
                         <div className="mt-8 pt-6 border-t border-dashed border-gray-100">
                             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Redirecting to home in 6s...</p>
-                            <button 
+                            <button
                                 onClick={() => navigate('/')}
                                 className="mt-4 text-[10px] font-bold text-burgundy underline uppercase"
                             >
@@ -88,14 +98,14 @@ const PaymentCallback: React.FC = () => {
                         </p>
 
                         <div className="mt-10 flex flex-col gap-3">
-                            <button 
-                                onClick={() => navigate(-1)} 
+                            <button
+                                onClick={() => navigate(-1)}
                                 className="w-full bg-dark-gray text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all shadow-lg"
                             >
                                 Try Again
                             </button>
-                            <button 
-                                onClick={() => navigate('/')} 
+                            <button
+                                onClick={() => navigate('/')}
                                 className="w-full bg-gray-50 text-gray-400 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all"
                             >
                                 Back to Home
