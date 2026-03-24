@@ -3,6 +3,7 @@ export type AdminTab = 'DASHBOARD' | 'MENU' | 'INVENTORY' | 'REPORTS' | 'STAFF' 
 export type CustomerTab = 'MENU' | 'AI' | 'STATUS';
 export type BillStatus = 'OPEN' | 'PAID' | 'CLOSED' | 'CANCELLED';
 export type ItemStatus = 'PENDING' | 'PREPARING' | 'READY' | 'SERVED' | 'CANCELLED';
+export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'SEATED' | 'CANCELLED' | 'NO_SHOW';
 
 export enum PaymentMethod {
   CASH = 'CASH',
@@ -92,6 +93,19 @@ export interface Table {
 }
 
 // --- 8. Thực thể Reservation ---
+export interface CreateReservationRequest {
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  partySize: number;
+  reservationTime: string; // ISO String: "2026-03-23T19:00:00"
+  startTime: string;       // "19:00:00"
+  endTime: string;         // "21:00:00"
+  note?: string;
+  requestedTableIds?: number[];
+  preOrderItems?: PreOrderItemRequest[];
+}
+
 export interface ReservationRequest {
   customerName: string;
   customerPhone: string;
@@ -104,6 +118,7 @@ export interface ReservationRequest {
 export interface PreOrderItemRequest {
   itemId: number;
   quantity: number;
+  note?: string;
 }
 
 export interface ReservationWithDepositRequest {
@@ -121,12 +136,24 @@ export interface ReservationResponse {
   id: number;
   customerName: string;
   customerPhone: string;
-  reservationTime: string;
   partySize: number;
-  status: 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CANCELLED' | 'NO_SHOW';
-  tableNumber?: string;
+  reservationTime: string;
+  status: ReservationStatus;
+  depositRequired: boolean;
+  depositAmount: number;
+  depositPaid: boolean;
+  tableNumbers: string[];
   billId?: number;
-  depositAmount?: number; // Thêm trường này để hiển thị ở màn hình Review
+  canCheckIn: boolean;
+  canCancel: boolean;
+}
+
+export interface BookedSlotResponse {
+  reservationTime: string;
+  reservationEndTime: string;
+  partySize: number;
+  tableNumbers: string[];
+  status: ReservationStatus;
 }
 
 // --- 9. Hóa đơn & Thanh toán ---
@@ -147,10 +174,10 @@ export interface BillResponse {
 }
 
 export interface DiscountResponse {
-    id: number;
-    code: string;
-    percentage: number;
-    maxAmount: number;
+  id: number;
+  code: string;
+  percentage: number;
+  maxAmount: number;
 }
 // --- 9. AI Recommendation Types ---
 export interface AIRecommendRequest {
