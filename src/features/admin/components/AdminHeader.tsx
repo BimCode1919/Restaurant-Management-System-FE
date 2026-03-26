@@ -11,7 +11,7 @@ const AdminHeader: React.FC<Props> = ({ activeTab, label }) => {
     <header className="h-24 flex items-center justify-between px-10 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-[50]">
       <div>
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-1">
-          Culina / {activeTab}
+          Resto / {activeTab}
         </p>
         <h2 className="text-2xl font-black text-dark-gray uppercase tracking-tighter">
           {label || activeTab}

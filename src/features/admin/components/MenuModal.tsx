@@ -1,15 +1,66 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MenuItem } from '../types';
+import { adminApi } from '../services/adminApi';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   editingItem: MenuItem | null;
-  // Chúng ta sẽ truyền dữ liệu đã parse về cho Hook xử lý
+  // We will pass the parsed data back to the Hook for processing
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 const MenuModal: React.FC<Props> = ({ isOpen, onClose, editingItem, onSubmit }) => {
+  const [imageUrl, setImageUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    setImageUrl(editingItem?.imageUrl || '');
+  }, [editingItem]);
+
+  const handleFileUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      console.log('DEBUG: Starting upload for file:', file.name, file.type);
+      
+      // Step 1: Get presigned URL
+      const response = await adminApi.getPresignedUrl(file.name, file.type);
+      console.log('DEBUG: Presigned URL response:', response);
+      
+      const { presignedUrl, publicUrl } = response.data;
+      console.log('DEBUG: Extracted URLs:', { presignedUrl, publicUrl });
+
+      if (!presignedUrl || !publicUrl) {
+        throw new Error('Server did not return valid presigned URL or public URL');
+      }
+
+      // Step 2: Upload file to MinIO
+      console.log('DEBUG: Uploading to presigned URL...');
+      const uploadResponse = await fetch(presignedUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+        },
+        body: file,
+      });
+      
+      if (!uploadResponse.ok) {
+        throw new Error(`Upload failed with status: ${uploadResponse.status}`);
+      }
+      
+      console.log('DEBUG: Upload successful');
+
+      // Step 3: Set publicUrl as imageUrl
+      setImageUrl(publicUrl);
+      console.log('DEBUG: Set imageUrl to:', publicUrl);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Image upload failed: ' + (error as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -72,7 +123,7 @@ const MenuModal: React.FC<Props> = ({ isOpen, onClose, editingItem, onSubmit }) 
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Category ID (Bạn nên truyền list categories từ BE vào đây, tạm thời để hardcode ID) */}
+            {/* Category ID (You should pass categories list from BE here, temporarily hardcoded IDs) */}
             <div>
               <label className="block text-[10px] font-black uppercase text-gray-400 mb-1.5 ml-1">Category ID</label>
               <select 
@@ -99,16 +150,31 @@ const MenuModal: React.FC<Props> = ({ isOpen, onClose, editingItem, onSubmit }) 
             </div>
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload */}
           <div>
-            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1.5 ml-1">Image URL</label>
-            <input 
-              name="imageUrl" 
-              defaultValue={editingItem?.imageUrl} 
-              placeholder="https://images.unsplash.com/..."
-              className="w-full border-gray-200 rounded-xl px-4 py-3 border focus:ring-2 focus:ring-burgundy outline-none" 
+            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1.5 ml-1">Image</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleFileUpload(file);
+                }
+              }}
+              className="w-full border-gray-200 rounded-xl px-4 py-3 border focus:ring-2 focus:ring-burgundy outline-none"
+              disabled={uploading}
             />
+            {uploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
+            {imageUrl && (
+              <div className="mt-2">
+                <img src={imageUrl} alt="Preview" className="w-20 h-20 object-cover rounded-lg" />
+              </div>
+            )}
           </div>
+
+          {/* Hidden Image URL */}
+          <input type="hidden" name="imageUrl" value={imageUrl} />
 
           {/* Description */}
           <div>
@@ -124,9 +190,10 @@ const MenuModal: React.FC<Props> = ({ isOpen, onClose, editingItem, onSubmit }) 
           {/* Submit Button */}
           <button 
             type="submit" 
-            className="w-full py-4 bg-burgundy text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-burgundy/20 hover:bg-opacity-90 active:scale-95 transition-all mt-4"
+            disabled={uploading}
+            className={`w-full py-4 ${uploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-burgundy hover:bg-opacity-90'} text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-burgundy/20 active:scale-95 transition-all mt-4`}
           >
-            {editingItem ? 'Save Updates' : 'Publish Dish'}
+            {uploading ? 'Uploading image...' : editingItem ? 'Save Updates' : 'Publish Dish'}
           </button>
         </form>
       </div>

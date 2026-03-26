@@ -1,4 +1,4 @@
-import axiosClient from '../../../api/axiosClient'; // Đường dẫn tới file config của bạn
+import axiosClient from '../../../api/axiosClient'; // Path to your config file
 import {
     ApiResponse,
     BillResponse,
@@ -10,7 +10,7 @@ import {
 
 export const cashierApi = {
     /**
-     * Lấy thông tin chi tiết của một hóa đơn
+     * Get detailed information of a bill
      * @GetMapping("/bills/{id}")
      */
     getBillDetails: (billId: number): Promise<ApiResponse<BillResponse>> => {
@@ -18,7 +18,7 @@ export const cashierApi = {
     },
 
     /**
-     * Tự động áp dụng mã giảm giá tốt nhất cho hóa đơn
+     * Automatically apply the best discount code for the bill
      * @PostMapping("/bills/{id}/apply-best-discount")
      */
     applyBestDiscount: (billId: number): Promise<ApiResponse<BillResponse>> => {
@@ -26,13 +26,13 @@ export const cashierApi = {
     },
 
     /**
-     * Tạo yêu cầu thanh toán (Tiền mặt hoặc MoMo)
+     * Create payment request (Cash or MoMo)
      * @PostMapping("/payments")
-     * Lưu ý: Kết quả trả về trực tiếp PaymentResponse theo cấu trúc Controller của bạn
+     * Note: Result returns PaymentResponse directly according to your Controller structure
      */
     createPayment: (request: CreatePaymentRequest): Promise<PaymentResponse> => {
-        // Vì Controller trả về trực tiếp PaymentResponse (không bọc ApiResponse)
-        // và axiosClient đã return response.data, nên ở đây nhận được đúng object cần thiết.
+        // Because Controller returns PaymentResponse directly (not wrapped in ApiResponse)
+        // and axiosClient already returns response.data, so we get the correct object here.
         return axiosClient.post('/payments', request);
     },
 
@@ -40,11 +40,16 @@ export const cashierApi = {
         return axiosClient.post('/bills/merge', request);
     },
 
+    unmergeBill: (billId: number): Promise<ApiResponse<BillResponse>> => {
+        // API path from swagger: DELETE /bills/unmerge with body { billId }
+        return axiosClient.delete('/bills/unmerge', { data: { billId } });
+    },
+
     getAllTables: (): Promise<ApiResponse<TableResponse[]>> => {
         return axiosClient.get('/tables');
     },
     
-    // Thêm hàm này vào cashierApi
+    // Add this function to cashierApi
     checkPaymentStatus: (paymentId: number): Promise<PaymentResponse> => {
         return axiosClient.get(`/payments/${paymentId}/status`);
     },

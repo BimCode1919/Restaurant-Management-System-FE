@@ -92,6 +92,31 @@ export const useCashier = () => {
     }
   };
 
+  const handleUnmergeBill = async (billId: number) => {
+    if (!billId) {
+      toast.error("No bill selected to unmerge");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await cashierApi.unmergeBill(billId);
+      toast.success("Bill unmerged successfully!");
+
+      if (res.data) {
+        // API có thể trả về bảng đã khôi phục, lấy bảng đầu tiên nếu là array hoặc object
+        const restored = Array.isArray(res.data) ? res.data[0] : res.data;
+        setBill(restored as any);
+      }
+
+      return res.data;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Unmerge failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     bill,
     setBill,
@@ -100,6 +125,7 @@ export const useCashier = () => {
     loadBill,
     handleApplyDiscount,
     processCheckout,
-    handleMergeBills // Export hàm mới
+    handleMergeBills,
+    handleUnmergeBill
   };
 };
