@@ -12,6 +12,7 @@ import DashboardView  from "../components/DashboardView";
 import { InventoryView } from "../components/InventoryView";
 import  InventoryModal  from "../components/InventoryModal";
 import StaffView from '../components/StaffView';
+import ReportsView from '../components/ReportsView';
 import { useStaff } from '../hooks/useStaff';
 import StaffModal from '../components/StaffModal';
 
@@ -89,6 +90,9 @@ const AdminDashboard: React.FC<{ store: any }> = ({ store }) => {
                     onEdit={staffData.openEditModal} 
                     onAddNew={staffData.openAddModal}
                 />);
+
+            case 'REPORTS':
+                return <ReportsView />;
 
             default:
                 return (

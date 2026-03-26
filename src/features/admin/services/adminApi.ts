@@ -5,31 +5,31 @@ import { IngredientBatch } from '@/types';
 import { Staff } from "../types"
 
 export const adminApi = {
-  // Lấy danh sách món có phân trang (dùng cho bảng quản lý)
+  // Get paginated list of items (for management table)
   getAllItems: (page = 0, size = 10): Promise<ApiResponse<PageResponse<MenuItem>>> => {
     return axiosClient.get(`/items`, {
       params: { page, size, sortBy: 'id', sortDirection: 'DESC' }
     });
   },
 
-  // Search món ăn
+  // Search dishes
   searchItems: (keyword: string, page = 0, size = 10): Promise<ApiResponse<PageResponse<MenuItem>>> => {
     return axiosClient.get(`/items/search`, {
       params: { keyword, page, size }
     });
   },
 
-  // Tạo món mới (Admin Only)
+  // Create new dish (Admin Only)
   createItem: (data: any): Promise<ApiResponse<MenuItem>> => {
     return axiosClient.post('/items', data);
   },
 
-  // Xóa món (Admin Only)
+  // Delete dish (Admin Only)
   deleteItem: (id: number): Promise<ApiResponse<void>> => {
     return axiosClient.delete(`/items/${id}`);
   },
 
-  // Lấy chi tiết 1 món
+  // Get dish details
   getItemById: (id: number): Promise<ApiResponse<MenuItem>> => {
     return axiosClient.get(`/items/${id}`);
   },
@@ -39,30 +39,33 @@ export const adminApi = {
   },
 // ================= DASHBOARD =================
 
-// API /bills trả về { statusCode: 200, message: "...", data: [...] }
-getBills: async () => {
-    const res = await axiosClient.get("/bills");
-    return res.data; // Trả về object chứa trường .data để DashboardView.tsx xử lý
+// API /bills returns { statusCode: 200, message: "...", data: [...] }
+getBills: async (): Promise<ApiResponse<any>> => {
+    return axiosClient.get('/bills');
 },
 
-// API /orders tương tự, cần kiểm tra kỹ vì đang bị lỗi 500 trên Network
-getOrders: async () => {
-    const res = await axiosClient.get("/orders");
-    return res.data; 
+// API /orders similar
+getOrders: async (): Promise<ApiResponse<any>> => {
+    return axiosClient.get('/orders');
 },
 
-// API /tables trả về danh sách bàn trong trường .data
-getTables: async () => {
-    const res = await axiosClient.get("/tables");
-    return res.data;
+// Get preparing items for dashboard
+getPreparingItems: async (): Promise<ApiResponse<any[]>> => {
+    return axiosClient.get('/order-details/statusList', {
+        params: { status: 'PREPARING' }
+    });
 },
 
-// API /ingredient-batches/expiring cần truyền thêm params mặc định nếu Backend yêu cầu
-getExpiringBatches: async (days = 1) => {
-    const res = await axiosClient.get("/ingredient-batches/expiring", {
+// API /tables returns list of tables in .data field
+getTables: async (): Promise<ApiResponse<any>> => {
+    return axiosClient.get('/tables');
+},
+
+// API /ingredient-batches/expiring needs additional default params if Backend requires
+getExpiringBatches: async (days = 1): Promise<ApiResponse<any>> => {
+    return axiosClient.get('/ingredient-batches/expiring', {
         params: { days }
     });
-    return res.data;
 },
 // ================= INVENTORY =================
 
@@ -113,7 +116,7 @@ getExpiringBatches: async (days = 1) => {
   },
 
   updateStaff: (id: number, data: any) => {
-  // Chỉ gửi những trường mà API yêu cầu (dựa trên ảnh Swagger của bạn)
+  // Only send fields that API requires (based on your Swagger image)
   const updateData = {
     fullName: data.fullName.trim(),
     email: data.email,
@@ -128,5 +131,10 @@ getExpiringBatches: async (days = 1) => {
 
   changeRole: (id: number, role: string) => {
     return axiosClient.patch(`/users/${id}/role`, { role })
+  },
+
+  // API to get presigned URL for image upload
+  getPresignedUrl: (fileName: string, contentType: string): Promise<ApiResponse<{ presignedUrl: string; publicUrl: string; expiresInMinutes: number }>> => {
+    return axiosClient.post('/files/presigned-url', { fileName, contentType });
   }
-  };
+};

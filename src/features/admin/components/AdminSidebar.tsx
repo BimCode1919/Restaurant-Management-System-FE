@@ -25,7 +25,7 @@ const AdminSidebar: React.FC<Props> = ({ activeTab, setActiveTab, user, logout }
           <div className="size-10 bg-burgundy rounded-xl flex items-center justify-center text-white shadow-lg shadow-burgundy/20">
             <span className="material-symbols-outlined">restaurant</span>
           </div>
-          <h1 className="text-xl font-black text-dark-gray uppercase tracking-tighter">Culina</h1>
+          <h1 className="text-xl font-black text-dark-gray uppercase tracking-tighter">Resto</h1>
         </div>
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Admin Portal</p>
       </div>
@@ -56,7 +56,7 @@ const AdminSidebar: React.FC<Props> = ({ activeTab, setActiveTab, user, logout }
           </div>
           <div className="truncate">
             <p className="text-xs font-black text-dark-gray truncate uppercase">{user?.fullName || 'Administrator'}</p>
-            <p className="text-[10px] font-bold text-gray-400 truncate">{user?.email || 'admin@culina.com'}</p>
+            <p className="text-[10px] font-bold text-gray-400 truncate">{user?.email || 'admin@restaurant.com'}</p>
           </div>
         </div>
         <button 

@@ -58,7 +58,24 @@ const MenuView: React.FC<Props> = ({
             {menu.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50/50 group transition-colors">
                 <td className="px-8 py-5 flex items-center gap-4">
-                  <div className="size-12 rounded-2xl bg-gray-100 bg-cover" style={{ backgroundImage: `url(${item.imageUrl || ''})` }}></div>
+                  <div className="size-12 rounded-2xl bg-gray-100 bg-cover bg-center overflow-hidden">
+                    {item.imageUrl ? (
+                      <img 
+                        src={item.imageUrl.startsWith('/menu/') ? item.imageUrl : `/menu/${item.id}.jpg`}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.parentElement!.style.backgroundColor = '#f3f4f6';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-gray-400 text-lg">image</span>
+                      </div>
+                    )}
+                  </div>
                   <div>
                     <p className="font-bold text-dark-gray">{item.name}</p>
                     <p className="text-[10px] text-gray-400 uppercase font-black">{item.unit}</p>

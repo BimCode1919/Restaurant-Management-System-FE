@@ -49,18 +49,25 @@ const DashboardView: React.FC = () => {
 const loadDashboard = async () => {
   try {
     // Gọi tất cả API cùng lúc, lỗi 1 cái cũng không sao
-    const [billsRes, ordersRes, tablesRes, batchesRes] = await Promise.allSettled([
+    const [billsRes, ordersRes, tablesRes, batchesRes, preparingItemsRes] = await Promise.allSettled([
       adminApi.getBills(),
       adminApi.getOrders(),
       adminApi.getTables(),
-      adminApi.getExpiringBatches()
+      adminApi.getExpiringBatches(),
+      adminApi.getPreparingItems()
     ]);
 
-    // Hàm lấy dữ liệu từ mảng data của Backend (dựa trên ảnh Swagger bạn gửi)
+    // Helper to get array data from backend response
     const getArrayData = (res: any) => {
-      if (res.status === 'fulfilled' && res.value?.data) {
-        return res.value.data; // Vì adminApi của bạn đã trả về res.data (Object bọc ngoài)
+      if (res.status === 'fulfilled') {
+        if (res.value?.data) {
+          return res.value.data;
+        }
+        console.warn('Dashboard: fulfilled response missing data field', res.value);
+        return [];
       }
+
+      console.warn('Dashboard: rejected response', res.reason);
       return [];
     };
 
@@ -68,6 +75,7 @@ const loadDashboard = async () => {
     const orders = getArrayData(ordersRes);
     const tables = getArrayData(tablesRes);
     const batches = getArrayData(batchesRes);
+    const preparingItems = getArrayData(preparingItemsRes);
 
     // Lấy ngày hiện tại khớp với format "2026-03-09" trong DB của bạn
     const today = new Date().toISOString().slice(0, 10);
@@ -77,10 +85,12 @@ const loadDashboard = async () => {
       .filter((b: any) => b.createdAt?.startsWith(today))
       .reduce((sum: number, b: any) => sum + (Number(b.totalPrice) || 0), 0);
 
-    // 2. Tính số Đơn hàng hôm nay
-    const ordersToday = orders.filter((o: any) => 
-      o.createdAt?.startsWith(today)
-    ).length;
+    // 2. Tính số Đơn hàng hôm nay (chỉ active orders at table)
+    const activeOrdersToday = orders.filter((o: any) => 
+      o.createdAt?.startsWith(today) &&
+      o.orderType === "AT_TABLE" &&  // Chỉ lấy orders tại bàn
+      (o.orderStatus === null || o.orderStatus === "PENDING" || o.orderStatus === "PREPARING") // Active status
+    );
 
     // 3. Tính bàn đang có khách (image_2fc573.png)
     const activeTables = tables.filter(
@@ -89,7 +99,7 @@ const loadDashboard = async () => {
 
     setStats({
       revenueToday,
-      ordersToday,
+      ordersToday: preparingItems.length, // Số items đang PREPARING
       activeTables,
       lowStock: batches.length
     });
@@ -103,9 +113,15 @@ const loadDashboard = async () => {
       setSalesData(chart);
     }
 
-    // 5. Cập nhật đơn hàng gần đây
+    // 5. Cập nhật đơn hàng gần đây (chỉ active orders at table trong ngày)
     if (orders.length > 0) {
-      const recent = orders.slice(-5).map((o: any) => ({
+      const activeOrdersToday = orders.filter((o: any) => 
+        o.createdAt?.startsWith(today) &&  // Chỉ lấy orders trong ngày hôm nay
+        o.orderType === "AT_TABLE" &&  // Chỉ lấy orders tại bàn
+        (o.orderStatus === null || o.orderStatus === "PENDING" || o.orderStatus === "PREPARING") // Active status
+      );
+      
+      const recent = activeOrdersToday.slice(-5).map((o: any) => ({
         id: o.id,
         table: o.tableNumber || o.tableId || "N/A",
         total: o.totalAmount || 0,

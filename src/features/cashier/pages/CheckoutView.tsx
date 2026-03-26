@@ -9,7 +9,7 @@ import { CashPaymentModal } from '../components/CashPaymentModal';
 
 const CheckoutView: React.FC = () => {
   const { state: staffState, actions: staffActions } = useStaffOrder();
-  const { bill, loading, loadBill, handleApplyDiscount, processCheckout, handleMergeBills } = useCashier();
+  const { bill, loading, loadBill, handleApplyDiscount, processCheckout, handleMergeBills, handleUnmergeBill } = useCashier();
 
   const [selectedTableId, setSelectedTableId] = useState<number | undefined>(undefined);
   // Trạng thái hiển thị modal thanh toán tiền mặt
@@ -81,6 +81,27 @@ const CheckoutView: React.FC = () => {
             >
               <span className="material-symbols-outlined text-olive group-hover:rotate-180 transition-transform duration-500">call_merge</span>
               <span className="text-[10px] font-black text-dark-gray uppercase tracking-widest">Merge Bills</span>
+            </button>
+
+            <button
+              onClick={async () => {
+                if (bill?.id) {
+                  await handleUnmergeBill(bill.id);
+                  staffActions.refreshData();
+                  if (bill?.tableNumbers?.length === 1) {
+                    // keep current bill loaded to show restored values
+                    loadBill(bill.id);
+                  } else {
+                    // clear selection so user chooses renewed table state
+                    setSelectedTableId(undefined);
+                  }
+                }
+              }}
+              className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 hover:border-red-400 group transition-all"
+              disabled={!bill}
+            >
+              <span className="material-symbols-outlined text-red-500">undo</span>
+              <span className="text-[10px] font-black text-dark-gray uppercase tracking-widest">Unmerge Bill</span>
             </button>
 
             {/* Logout (đã tối ưu UI) */}
