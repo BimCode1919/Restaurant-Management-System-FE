@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
@@ -48,6 +49,25 @@ const ReservationFlow: React.FC = () => {
   useEffect(() => {
     customerApi.getAvailableMenu().then(res => setMenuItems(res.data));
   }, []);
+
+  useEffect(() => {
+    if (!bookingTime) return;
+
+    const now = new Date();
+    const todayString = format(now, 'yyyy-MM-dd');
+
+    if (bookingDate !== todayString) {
+      return;
+    }
+
+    const [hour, minute] = bookingTime.split(':').map(Number);
+    const slotMinutes = hour * 60 + minute;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    if (slotMinutes <= currentMinutes) {
+      setBookingTime('');
+    }
+  }, [bookingDate, bookingTime, setBookingTime]);
 
   // --- Handlers ---
 
