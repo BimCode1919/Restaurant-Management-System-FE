@@ -246,7 +246,10 @@ const StaffDashboard: React.FC = () => {
           onAction={async (type, id, extra) => {
             const actionExtra = type === 'CANCEL' ? { reason: 'Customer requested' } : extra;
             const res = await actions.handleReservationAction(type, id, actionExtra);
-            if (res?.success) actions.setReservationDetail(null);
+            // Chỉ ẩn modal khi thao tác thành công
+            if (res && res.success) {
+              actions.setReservationDetail(null);
+            }
           }}
         />
 
@@ -280,7 +283,13 @@ const StaffDashboard: React.FC = () => {
                 // Lỗi đã được xử lý bằng alert trong hook, hoặc dùng toast ở đây
               }
             }}
-            onServeItem={actions.serveItem} // Thêm hàm serveItem vào props
+            onServeItem={async (orderDetailId) => {
+              const res = await actions.serveItem(orderDetailId);
+              if (res?.success && manageModal.table) {
+                // Reload lại billData để cập nhật UI ngay
+                handleManageTable(manageModal.table);
+              }
+            }}
           />
         )}
       </main>

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { adminApi } from "../services/adminApi";
+import { Discount } from "../types";
+import DiscountModal from "./DiscountModal";
+import DiscountList from "./DiscountList";
 import {
   LineChart,
   Line,
@@ -30,21 +33,57 @@ interface Props {
   }[];
 }
 
-const DashboardView: React.FC = () => {
 
+const DashboardView: React.FC = () => {
   const [stats, setStats] = useState({
     revenueToday: 0,
     ordersToday: 0,
     activeTables: 0,
     lowStock: 0
   });
-
   const [salesData, setSalesData] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
 
+  // Discount management state
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [discountModalOpen, setDiscountModalOpen] = useState(false);
+  const [editingDiscount, setEditingDiscount] = useState<Discount | null>(null);
+  const [loadingDiscounts, setLoadingDiscounts] = useState(false);
+
   useEffect(() => {
     loadDashboard();
+    fetchDiscounts();
   }, []);
+
+  const fetchDiscounts = async () => {
+    setLoadingDiscounts(true);
+    try {
+      const res = await adminApi.getAllDiscounts();
+      setDiscounts(res.data || []);
+    } catch (e) {
+      setDiscounts([]);
+    } finally {
+      setLoadingDiscounts(false);
+    }
+  };
+  // Discount CRUD handlers
+  const handleAddDiscount = () => {
+    setEditingDiscount(null);
+    setDiscountModalOpen(true);
+  };
+  const handleEditDiscount = (discount: Discount) => {
+    setEditingDiscount(discount);
+    setDiscountModalOpen(true);
+  };
+  const handleDeleteDiscount = async (discount: Discount) => {
+    if (!window.confirm(`Delete discount "${discount.name}"?`)) return;
+    try {
+      await adminApi.deleteDiscount(discount.id);
+      fetchDiscounts();
+    } catch (e) {
+      alert("Failed to delete discount.");
+    }
+  };
 
 const loadDashboard = async () => {
   try {
@@ -136,15 +175,15 @@ const loadDashboard = async () => {
 };
 
   const cards = [
-    { label:"Revenue Today", value:`$${stats.revenueToday}` },
+    { label:"Revenue Today", value:`${stats.revenueToday}VNĐ` },
     { label:"Orders Today", value:stats.ordersToday },
     { label:"Active Tables", value:stats.activeTables },
     { label:"Low Inventory", value:stats.lowStock }
   ];
 
+
   return (
     <div className="space-y-10">
-
       {/* KPI CARDS */}
       <div className="grid grid-cols-4 gap-6">
         {cards.map((c, i) => (
@@ -155,7 +194,6 @@ const loadDashboard = async () => {
             <p className="text-xs font-black uppercase text-gray-400 tracking-widest">
               {c.label}
             </p>
-
             <p className="text-3xl font-black mt-2 text-[#800020]">
               {c.value}
             </p>
@@ -168,7 +206,6 @@ const loadDashboard = async () => {
         <p className="text-xs font-black uppercase text-gray-400 tracking-widest mb-6">
           Sales Overview
         </p>
-
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={salesData}>
@@ -186,19 +223,35 @@ const loadDashboard = async () => {
         </div>
       </div>
 
+      {/* MANAGE DISCOUNT SECTION */}
+      <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-xs font-black uppercase text-gray-400 tracking-widest">
+            Manage Discounts
+          </p>
+          <button className="btn-primary" onClick={handleAddDiscount}>
+            Add Discount
+          </button>
+        </div>
+        <DiscountList
+          discounts={discounts}
+          onEdit={handleEditDiscount}
+          onDelete={handleDeleteDiscount}
+        />
+        {loadingDiscounts && <p className="text-gray-400 italic mt-2">Loading discounts...</p>}
+      </div>
+
       {/* RECENT ORDERS */}
       <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
         <p className="text-xs font-black uppercase text-gray-400 tracking-widest mb-6">
           Recent Orders
         </p>
-
         <div className="space-y-4">
           {recentOrders.length === 0 && (
             <p className="text-gray-400 italic">
               Orders list will appear here
             </p>
           )}
-
           {recentOrders.map((order) => (
             <div
               key={order.id}
@@ -210,10 +263,9 @@ const loadDashboard = async () => {
                   Order #{order.id}
                 </p>
               </div>
-
               <div className="text-right">
                 <p className="font-bold text-[#800020]">
-                  ${order.total}
+                  VNĐ{order.total}
                 </p>
                 <p className="text-xs text-gray-400">
                   {order.status}
@@ -222,9 +274,15 @@ const loadDashboard = async () => {
             </div>
           ))}
         </div>
-
       </div>
 
+      {/* Discount Modal */}
+      <DiscountModal
+        isOpen={discountModalOpen}
+        discount={editingDiscount}
+        onClose={() => setDiscountModalOpen(false)}
+        onSuccess={fetchDiscounts}
+      />
     </div>
   );
 };

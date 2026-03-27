@@ -4,12 +4,16 @@ import { TableSelectionGrid } from '../components/TableSelectionGrid';
 import { BillDetailSidebar } from '../components/BillDetailSidebar';
 import { MergeBillModal } from '../components/MergeBillModal'; // Component mới
 import { useCashier } from '../hooks/useCashier';
+import { useDiscounts } from '../hooks/useDiscounts';
+import { DiscountSelectModal } from '../components/DiscountSelectModal';
 import { TableResponse, TableStatus, PaymentMethod } from '../types';
 import { CashPaymentModal } from '../components/CashPaymentModal';
 
 const CheckoutView: React.FC = () => {
   const { state: staffState, actions: staffActions } = useStaffOrder();
   const { bill, loading, loadBill, handleApplyDiscount, processCheckout, handleMergeBills, handleUnmergeBill } = useCashier();
+  const discountHook = useDiscounts();
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
 
   const [selectedTableId, setSelectedTableId] = useState<number | undefined>(undefined);
   // Trạng thái hiển thị modal thanh toán tiền mặt
@@ -57,6 +61,16 @@ const CheckoutView: React.FC = () => {
       setShowCashModal(true);
     } else {
       processCheckout(method);
+    }
+  };
+
+  // Khi chọn discount xong, apply và reload bill
+  const handleSelectDiscount = async (discount) => {
+    if (!bill) return;
+    const ok = await discountHook.applyDiscount(bill.id, discount.id);
+    if (ok) {
+      await loadBill(bill.id);
+      setShowDiscountModal(false);
     }
   };
 
@@ -136,7 +150,18 @@ const CheckoutView: React.FC = () => {
                 loading={loading}
                 onApplyDiscount={handleApplyDiscount}
                 onCheckout={handleOnPayClick}
+                onShowDiscounts={() => setShowDiscountModal(true)}
               />
+                  {/* Modal chọn discount */}
+                  <DiscountSelectModal
+                    open={showDiscountModal}
+                    discounts={discountHook.discounts}
+                    loading={discountHook.loading}
+                    onClose={() => setShowDiscountModal(false)}
+                    onSelect={handleSelectDiscount}
+                    fetchDiscounts={discountHook.fetchActiveDiscounts}
+                    billTotal={bill?.totalPrice}
+                  />
             </div>
           </div>
         ) : (

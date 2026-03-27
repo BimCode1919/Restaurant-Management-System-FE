@@ -7,10 +7,11 @@ interface BillDetailSidebarProps {
   onApplyDiscount: () => void;
   onCheckout: (method: PaymentMethod) => void;
   loading: boolean;
+  onShowDiscounts?: () => void;
 }
 
 export const BillDetailSidebar: React.FC<BillDetailSidebarProps> = ({
-  bill, onApplyDiscount, onCheckout, loading
+  bill, onApplyDiscount, onCheckout, loading, onShowDiscounts
 }) => {
   return (
     <div className="flex flex-col h-full bg-white border-l border-gray-100 shadow-2xl p-6">
@@ -51,6 +52,12 @@ export const BillDetailSidebar: React.FC<BillDetailSidebarProps> = ({
                 className="bg-olive/10 text-olive text-[8px] px-2 py-1 rounded-full border border-olive/20 hover:bg-olive hover:text-white transition-all font-black"
               >
                 APPLY BEST
+              </button>
+              <button
+                onClick={onShowDiscounts}
+                className="bg-blue-50 text-blue-600 text-[8px] px-2 py-1 rounded-full border border-blue-200 hover:bg-blue-600 hover:text-white transition-all font-black ml-1"
+              >
+                VIEW ALL DISCOUNT
               </button>
             </div>
           </div>

@@ -1,3 +1,4 @@
+
 import axiosClient from '../../../api/axiosClient';
 import { ApiResponse, MenuItem, PageResponse } from '../types';
 import { Ingredient } from "@/types"
@@ -136,5 +137,25 @@ getExpiringBatches: async (days = 1): Promise<ApiResponse<any>> => {
   // API to get presigned URL for image upload
   getPresignedUrl: (fileName: string, contentType: string): Promise<ApiResponse<{ presignedUrl: string; publicUrl: string; expiresInMinutes: number }>> => {
     return axiosClient.post('/files/presigned-url', { fileName, contentType });
-  }
+  },
+  // ================= DISCOUNT MANAGEMENT =================
+  // Get all discounts
+  getAllDiscounts: () => {
+    return axiosClient.get('/discounts');
+  },
+
+  // Create new discount
+  createDiscount: (data: any) => {
+    return axiosClient.post('/discounts', data);
+  },
+
+  // Update discount
+  updateDiscount: (id: number, data: any) => {
+    return axiosClient.put(`/discounts/${id}`, data);
+  },
+
+  // Delete discount
+  deleteDiscount: (id: number) => {
+    return axiosClient.delete(`/discounts/${id}`);
+  },
 };

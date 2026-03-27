@@ -1,3 +1,28 @@
+// Discount type for admin discount management
+export interface Discount {
+  id: number;
+  name: string;
+  code: string;
+  description: string;
+  discountType: string;
+  valueType: string;
+  value: number;
+  minOrderAmount: number;
+  maxDiscountAmount: number;
+  startDate: string;
+  endDate: string;
+  usageLimit: number;
+  usedCount: number;
+  minPartySize: number;
+  maxPartySize: number;
+  tierConfig: string;
+  applicableDays: string;
+  applyToSpecificItems: boolean;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  calculatedAmount?: number;
+}
 // Định nghĩa chuẩn Response từ Spring Boot
 export interface ApiResponse<T> {
   statusCode: number;
