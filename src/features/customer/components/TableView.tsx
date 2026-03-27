@@ -7,9 +7,11 @@ interface Props {
     onSelect: (table: Table) => void;
     selectedIds: number[]; // Thêm prop này để highlight các bàn đã chọn
     minCapacity?: number;
+    selectedTime?: string; // Thời gian khách chọn để lọc bàn
+    selectedEndTime?: string; // Giờ kết thúc khách chọn
 }
 
-const TableView: React.FC<Props> = ({ onSelect, selectedIds, minCapacity }) => {
+const TableView: React.FC<Props> = ({ onSelect, selectedIds, minCapacity, selectedTime, selectedEndTime }) => {
     const [tables, setTables] = useState<Table[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -20,13 +22,30 @@ const TableView: React.FC<Props> = ({ onSelect, selectedIds, minCapacity }) => {
                 const res = await reservationApi.getAvailableTables();
                 let allTables = res.data || [];
 
-                // LOGIC LỌC BÀN:
-                // Nếu minCapacity > 10 (Large Group), hiển thị tất cả bàn để khách chọn gộp.
-                // Nếu là nhóm nhỏ, chỉ hiện các bàn có sức chứa phù hợp.
+                // Lọc bàn theo sức chứa nếu cần
                 let filteredTables = allTables;
                 if (minCapacity !== undefined && minCapacity <= 10) {
                     filteredTables = allTables.filter(table => table.capacity >= minCapacity);
                 }
+
+                // Lọc bàn theo khoảng thời gian: ẩn nếu khoảng khách chọn giao với reservationResponses
+                filteredTables = filteredTables.filter(table => {
+                    const res = table.currentBill?.reservationResponses;
+                    if (!res || !res.startTime || !res.endTime) return true;
+                    if (!selectedTime || !selectedEndTime) return true;
+                    const pad = (s: string) => s.length === 2 ? s : '0' + s;
+                    const toMinutes = (t: string) => {
+                        const [h, m] = t.split(':');
+                        return parseInt(pad(h)) * 60 + parseInt(pad(m));
+                    };
+                    const resStart = toMinutes(res.startTime);
+                    const resEnd = toMinutes(res.endTime);
+                    const selStart = toMinutes(selectedTime);
+                    const selEnd = toMinutes(selectedEndTime);
+                    // Ẩn nếu hai khoảng giao nhau
+                    const isOverlap = !(selEnd <= resStart || selStart >= resEnd);
+                    return !isOverlap;
+                });
 
                 setTables(filteredTables);
             } catch (error: any) {
@@ -55,7 +74,7 @@ const TableView: React.FC<Props> = ({ onSelect, selectedIds, minCapacity }) => {
         };
 
         loadTables();
-    }, [minCapacity]);
+    }, [minCapacity, selectedTime, selectedEndTime]);
 
     if (loading) {
         return (

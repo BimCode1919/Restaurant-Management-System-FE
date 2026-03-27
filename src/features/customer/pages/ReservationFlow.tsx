@@ -201,6 +201,15 @@ const ReservationFlow: React.FC = () => {
               onSelect={toggleTable}
               selectedIds={selectedTables.map(t => t.id)}
               minCapacity={partySize}
+              selectedTime={bookingTime}
+              selectedEndTime={(() => {
+                if (!bookingDate || !bookingTime) return undefined;
+                // Tính endTime giống như prepareRequest (cộng 2 tiếng)
+                const [h, m] = bookingTime.split(":");
+                const start = new Date(`${bookingDate}T${h.padStart(2, '0')}:${m.padStart(2, '0')}:00`);
+                const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+                return end.toTimeString().slice(0, 8); // "HH:mm:ss"
+              })()}
             />
             <button
               disabled={selectedTables.length === 0}

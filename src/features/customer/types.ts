@@ -90,6 +90,12 @@ export interface Table {
   status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'OUT_OF_SERVICE';
   location: string;
   qrCode: string;
+  currentBill?: BillResponse | null;
+  reservationResponses?: {
+    reservationId: number;
+    startTime: string;
+    endTime: string;
+  } | null;
 }
 
 // --- 8. Thực thể Reservation ---
@@ -171,6 +177,11 @@ export interface BillResponse {
   orders: OrderResponse[];
   createdAt: string;
   closedAt?: string;
+  reservationResponses?: {
+    reservationId: number;
+    startTime: string;
+    endTime: string;
+  } | null;
 }
 
 export interface DiscountResponse {
